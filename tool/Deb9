@@ -358,6 +358,22 @@ zip configs.zip client.ovpn OpenVPN-Stunnel.ovpn stunnel.conf
 # install libxml-parser
 apt-get install -y libxml-parser-perl
 
+# swap ram
+dd if=/dev/zero of=/swapfile bs=1024 count=4096k
+# buat swap
+mkswap /swapfile
+# jalan swapfile
+swapon /swapfile
+#auto star saat reboot
+wget https://raw.githubusercontent.com/brantbell/cream/mei/fstab
+mv ./fstab /etc/fstab
+chmod 644 /etc/fstab
+sysctl vm.swappiness=10
+#permission swapfile
+chown root:root /swapfile 
+chmod 0600 /swapfile
+cd
+
 # finalizing
 vnstat -u -i eth0
 apt-get -y autoremove

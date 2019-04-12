@@ -192,7 +192,7 @@ auth none
 http-proxy $MYIP 8080
 http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.1
 http-proxy-option CUSTOM-HEADER Host xx.fbcdn.net
-http-proxy-option CUSTOM-HEADER X-Forward-Host weixin.qq.cn
+http-proxy-option CUSTOM-HEADER X-Forward-Host xx.fbcdn.net
 http-proxy-option CUSTOM-HEADER Connection: Keep-Alive
 http-proxy-option CUSTOM-HEADER Proxy-Connection: keep-alive
 END

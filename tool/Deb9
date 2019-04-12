@@ -24,11 +24,11 @@ ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
 
 # install webmin
 cd
-wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/webmin_1.900_all.deb"
-dpkg --install webmin_1.900_all.deb;
+wget "https://raw.githubusercontent.com/wangzki03/premscript/master/webmin_1.801_all.deb"
+dpkg --install webmin_1.801_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-rm /root/webmin_1.900_all.deb
+rm /root/webmin_1.801_all.deb
 service webmin restart
 
 # install screenfetch
@@ -70,8 +70,8 @@ http_access deny manager
 http_access allow localhost
 http_access deny all
 http_port 8080
-http_port 3128
 http_port 80
+http_port 3128
 coredump_dir /var/spool/squid3
 refresh_pattern ^ftp: 1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440

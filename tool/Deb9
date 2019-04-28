@@ -343,11 +343,12 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-apt-get install unzip
-cd /usr/local/bin/
-wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip" 
-unzip premiummenu.zip
-chmod +x /usr/local/bin/*
+#apt-get install unzip
+#cd /usr/local/bin/
+#wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip" 
+#unzip premiummenu.zip
+#chmod +x /usr/local/bin/*
+wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
 
 # add eth0 to vnstat
 vnstat -u -i eth0

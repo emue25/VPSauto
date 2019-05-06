@@ -24,4 +24,4 @@ wget https://raw.githubusercontent.com/brantbell/VPSauto/master/SEsetup.sh && ch
 
 <br>
 <b>Debian 9 Autoscript sshvpn</b><br>
-wget https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/Deb9 && chmod +x Deb9 && ./Deb9 && rm -f Deb9 && history -c
+apt-get install wget && wget https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/Deb9 && chmod +x Deb9 && ./Deb9 && rm -f Deb9 && history -c

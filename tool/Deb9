@@ -208,7 +208,8 @@ echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
 echo '</ca>' >> /home/vps/public_html/client.ovpn
 
-cat > /home/vps/public_html/OpenVPN-Stunnel.ovpn <<-END
+cat > /home/vps/public_html/clientssl.ovpn <<-END
+#cat > /home/vps/public_html/OpenVPN-Stunnel.ovpn <<-END
 
 # Created by zhangzi
 auth-user-pass

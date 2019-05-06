@@ -234,23 +234,32 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
+
+#END
+#echo '<ca>' >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
+#cat /etc/openvpn/ca.crt >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
+#echo '</ca>' >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
+
+#cat > /home/vps/public_html/stunnel.conf <<-END
+
+#client = yes
+#debug = 6
+
+#[openvpn]
+#accept = 127.0.0.1:55
+#connect = $MYIP:587
+#TIMEOUTclose = 0
+#verify = 0
+#sni = play.google.com
+#END
 END
-echo '<ca>' >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
-echo '</ca>' >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
-
-cat > /home/vps/public_html/stunnel.conf <<-END
-
-client = yes
-debug = 6
-
-[openvpn]
-accept = 127.0.0.1:55
-connect = $MYIP:587
-TIMEOUTclose = 0
-verify = 0
-sni = play.google.com
-END
+echo '<ca>' >> /home/vps/public_html/clientssl.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/clientssl.ovpn
+echo '</ca>' >> /home/vps/public_html/clientssl.ovpn
+cd /home/vps/public_html/
+tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
+tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
+cd
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4

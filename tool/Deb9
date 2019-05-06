@@ -261,6 +261,11 @@ tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
 tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
 cd
 
+# Restart openvpn
+/etc/init.d/openvpn restart
+service openvpn start
+service openvpn status
+
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
@@ -372,8 +377,8 @@ vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn OpenVPN-Stunnel.ovpn stunnel.conf
-
+#zip configs.zip client.ovpn OpenVPN-Stunnel.ovpn stunnel.conf
+zip configs.zip client.ovpn clientssl.ovpn
 # install libxml-parser
 apt-get install -y libxml-parser-perl
 

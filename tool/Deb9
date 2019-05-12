@@ -210,7 +210,7 @@ echo '</ca>' >> /home/vps/public_html/client.ovpn
 
 cat > /home/vps/public_html/clientssl.ovpn <<-END
 #cat > /home/vps/public_html/OpenVPN-Stunnel.ovpn <<-END
-
+apt-get install -y openvpn iptables openssl wget ca-certificates curl
 # Created by zhangzi
 #auth-user-pass
 #client

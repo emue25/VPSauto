@@ -25,10 +25,10 @@ ln -fs /usr/share/zoneinfo/Asia/Malaysia /etc/localtime
 # install webmin
 cd
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/webmin_1.900_all.deb"
-dpkg --install webmin_1.900_all.deb;
+dpkg --install webmin_1.920_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-rm /root/webmin_1.900_all.deb
+rm /root/webmin_1.920_all.deb
 service webmin restart
 
 # install screenfetch
@@ -199,11 +199,8 @@ script-security 2
 cipher none
 auth none
 http-proxy $MYIP 8080
-http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.1
-http-proxy-option CUSTOM-HEADER Host xx.fbcdn.net
-http-proxy-option CUSTOM-HEADER X-Forward-Host xx.fbcdn.net
-http-proxy-option CUSTOM-HEADER Connection: Keep-Alive
-http-proxy-option CUSTOM-HEADER Proxy-Connection: keep-alive
+http-proxy-option CUSTOM-HEADER X-Forward-Host: www.wechat.com
+http-proxy-option CUSTOM-HEADER X-Online-Host: www.wechat.com
 END
 echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn

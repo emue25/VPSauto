@@ -199,8 +199,8 @@ script-security 2
 cipher none
 auth none
 http-proxy $MYIP 8080
-http-proxy-option CUSTOM-HEADER X-Forward-Host: www.wechat.com
-http-proxy-option CUSTOM-HEADER X-Online-Host: www.wechat.com
+http-proxy-option CUSTOM-HEADER X-Forward-Host: www.bing.com
+http-proxy-option CUSTOM-HEADER X-Online-Host: www.bing.com
 END
 echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn

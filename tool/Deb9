@@ -169,7 +169,7 @@ cipher none
 auth none
 END
 
-systemctl start openvpn@server
+#systemctl start openvpn@server
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
 cat > /home/vps/public_html/client.ovpn <<-END

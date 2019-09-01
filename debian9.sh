@@ -24,7 +24,7 @@ ln -fs /usr/share/zoneinfo/Asia/Malaysia /etc/localtime
 
 # install webmin
 cd
-wget "https://raw.githubusercontent.com/wangzki03/premscript/master/webmin_1.830_all.deb"
+wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/webmin_1.830_all.deb"
 dpkg --install webmin_1.830_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf

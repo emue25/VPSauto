@@ -91,6 +91,7 @@ refresh_pattern . 0 20% 4320
 visible_hostname zhangzi
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
+systemctl restart squid 
 
 # setting banner
 rm /etc/issue.net

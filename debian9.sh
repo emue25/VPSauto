@@ -378,8 +378,8 @@ service squid restart
 
 #clearing history
 history -c
-rm -rf /root/*
-cd /root
+#rm -rf /root/*
+#cd /root
 # info
 clear
 echo " "

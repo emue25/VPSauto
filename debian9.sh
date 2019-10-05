@@ -22,6 +22,13 @@ echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Malaysia /etc/localtime
 
+#update
+echo 'deb http://download.webmin.com/download/repository sarge contrib' >> /etc/apt/sources.list
+echo 'deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib' >> /etc/apt/sources.list
+wget http://www.webmin.com/jcameron-key.asc
+sudo apt-key add jcameron-key.asc
+sudo apt-get update
+
 # install webmin
 cd
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/webmin_1.930_all.deb"
@@ -256,7 +263,7 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 587
+accept = 444
 connect = 127.0.0.1:55
 cert = /etc/stunnel/stunnel.pem
 [dropbear]

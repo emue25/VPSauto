@@ -1,5 +1,9 @@
 #!/bin/sh
 #modif by kopet
+if [[ $USER != "root" ]]; then
+	echo "Maaf, Anda harus menjalankan ini sebagai root"
+	exit
+fi
 
 # initializing var
 MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`

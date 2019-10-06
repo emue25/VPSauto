@@ -1,12 +1,5 @@
 #!/bin/sh
-
-wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
-sleep 2
-echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
-#Requirement
-apt update
-apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+#modif by kopet mania
 
 # initializing var
 MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
@@ -18,14 +11,18 @@ wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/premiummen
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
-
-# set time GMT +8
-ln -fs /usr/share/zoneinfo/Asia/Malaysia /etc/localtime
-
 #repo
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
 echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+
+#Requirement
+apt update
+apt upgrade -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+
+# set time GMT +8
+ln -fs /usr/share/zoneinfo/Asia/Kuala_lumpur /etc/localtime
 
 #Requirement
 apt update

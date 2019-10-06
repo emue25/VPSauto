@@ -1,12 +1,5 @@
 #!/bin/sh
-
-wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
-sleep 2
-echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
-#Requirement
-apt update
-apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+#modif by kopet
 
 # initializing var
 MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
@@ -29,6 +22,14 @@ wget http://www.webmin.com/jcameron-key.asc
 sudo apt-key add jcameron-key.asc
 sudo apt-get update
 
+#repo
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+sleep 2
+echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+#Requirement
+apt update
+apt upgrade -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
 # install webmin
 cd
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/webmin_1.930_all.deb"
@@ -36,7 +37,7 @@ dpkg --install webmin_1.930_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 rm /root/webmin_1.930_all.deb
-service webmin restart
+systemctl restart webmin
 
 # install screenfetch
 cd
@@ -56,9 +57,9 @@ echo "/bin/false" >> /etc/shells
 
 #upgrade dropbear
 apt-get install zlib1g-dev
-wget https://raw.githubusercontent.com/brantbell/cream/mei/dropbear-2016.74.tar.bz2
-bzip2 -cd dropbear-2016.74.tar.bz2 | tar xvf -
-cd dropbear-2016.74
+wget https://raw.githubusercontent.com/emue25/VPSauto/dropbear-2019.78.tar.bz2
+bzip2 -cd dropbear-2019.78.tar.bz2 | tar xvf -
+cd dropbear-2019.78
 ./configure
 make && make install
 

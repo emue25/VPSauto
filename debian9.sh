@@ -188,7 +188,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 55
+remote $MYIP 443
 persist-key
 persist-tun
 pull
@@ -206,7 +206,7 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
-http-proxy $MYIP 3128
+http-proxy $MYIP 80
 http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.1
 http-proxy-option CUSTOM-HEADER Host www.bing.com
 http-proxy-option CUSTOM-HEADER X-Forward-Host www.bing.com
@@ -223,7 +223,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote 127.0.0.1 55
+remote 127.0.0.1 443
 route $MYIP 255.255.255.255 net_gateway
 persist-key
 persist-tun
@@ -251,7 +251,7 @@ cat > /home/vps/public_html/stunnel.conf <<-END
 client = yes
 debug = 6
 [openvpn]
-accept = 127.0.0.1:55
+accept = 127.0.0.1:443
 connect = $MYIP:587
 TIMEOUTclose = 0
 verify = 0
@@ -269,17 +269,17 @@ socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
 accept = 444
-connect = 127.0.0.1:55
+connect = 127.0.0.1:443
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
-accept = 443
+accept = 445
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 END
 
 #Setting UFW
 ufw allow ssh
-ufw allow 55/tcp
+ufw allow 443/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -373,18 +373,18 @@ apt-get install -y libxml-parser-perl
 vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
-service nginx start
-service php7.0-fpm start
-service vnstat restart
-service openvpn restart
-service dropbear restart
-service fail2ban restart
-service squid restart
+/etc/init.d/nginx start
+/etc/init.d/php7.0-fpm start
+/etc/init.d/vnstat restart
+/etc/init.d/openvpn restart
+/etc/init.d/dropbear restart
+/etc/init.d/fail2ban restart
+/etc/init.d/squid restart
 
 #clearing history
 history -c
-#rm -rf /root/*
-#cd /root
+rm -rf /root/*
+cd /root
 # info
 clear
 echo " "
@@ -424,6 +424,3 @@ echo ""  | tee -a log-install.txt
 echo "   - Webmin                  : http://$MYIP:10000/"  | tee -a log-install.txt
 echo ""
 echo "------------------------------ Modified by zhangzi -----------------------------"
-echo "-----Rebooting your VPS -----"
-sleep 5
-reboot

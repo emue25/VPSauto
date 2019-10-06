@@ -5,9 +5,9 @@
 # initializing var
 MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
 MYIP2="s/xxxxxxxxx/$MYIP/g";
-cd /root
-wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/plugin.tgz"
-wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip"
+#cd /root
+#wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/plugin.tgz"
+#wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip"
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -30,12 +30,12 @@ ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
 
 # install webmin
 cd
-wget "https://raw.githubusercontent.com/wangzki03/premscript/master/webmin_1.801_all.deb"
+wget "https://raw.githubusercontent.com/emue25/VPSauto/master/webmin_1.930_all.deb"
 dpkg --install webmin_1.801_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-rm /root/webmin_1.801_all.deb
-service webmin restart
+rm /root/webmin_1.930_all.deb
+/etc/init.d/webmin restart
 
 # install screenfetch
 cd
@@ -48,6 +48,7 @@ echo "screenfetch" >> .profile
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
+/etc/init.d/dropbear resrart
 
 # install squid3
 cat > /etc/squid/squid.conf <<-END
@@ -81,14 +82,15 @@ refresh_pattern . 0 20% 4320
 visible_hostname Wangzki
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
+/etc/init.d/squid restart
 
 # setting banner
 rm /etc/issue.net
 wget -O /etc/issue.net "https://raw.githubusercontent.com/wangzki03/premscript/master/issue.net"
 sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
 sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
-service ssh restart
-service dropbear restart
+/etc/init.d/ssh restart
+/etc/init.d/dropbear restart
 
 #install OpenVPN
 cp -r /usr/share/easy-rsa/ /etc/openvpn
@@ -129,7 +131,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 1147
+port 55
 proto tcp
 dev tun
 ca ca.crt
@@ -348,13 +350,13 @@ apt-get install -y libxml-parser-perl
 vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
-service nginx start
-service php7.0-fpm start
-service vnstat restart
-service openvpn restart
-service dropbear restart
-service fail2ban restart
-service squid restart
+/etc/init.d/nginx start
+/etc/init.d/php7.0-fpm start
+/etc/init.d/vnstat restart
+/etc/init.d/openvpn restart
+/etc/init.d/dropbear restart
+/etc/init.d/fail2ban restart
+/etc/init.d/squid restart
 
 #clearing history
 history -c

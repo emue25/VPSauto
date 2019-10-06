@@ -1,16 +1,19 @@
 #!/bin/sh
-#modif by kopet
-if [[ $USER != "root" ]]; then
-	echo "Maaf, Anda harus menjalankan ini sebagai root"
-	exit
-fi
+
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+sleep 2
+echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+#Requirement
+apt update
+apt upgrade -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
 
 # initializing var
 MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
-wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/plugin.tgz"
-wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip"
+wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
+wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/premiummenu.zip"
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -19,21 +22,16 @@ echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Malaysia /etc/localtime
 
-#update
-echo 'deb http://download.webmin.com/download/repository sarge contrib' >> /etc/apt/sources.list
-echo 'deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib' >> /etc/apt/sources.list
-wget http://www.webmin.com/jcameron-key.asc
-sudo apt-key add jcameron-key.asc
-sudo apt-get update
-
 #repo
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
 echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+
 #Requirement
 apt update
 apt upgrade -y
 apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+
 # install webmin
 cd
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/webmin_1.930_all.deb"
@@ -41,10 +39,18 @@ dpkg --install webmin_1.930_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 rm /root/webmin_1.930_all.deb
-systemctl restart webmin
+service webmin restart
+
+#remove & install
+apt-get -y remove --purge unscd
+apt-get -y install dnsutils
 
 # install screenfetch
 cd
+#wget -O /usr/bin/screenfetch "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/screenfetch"
+#chmod +x /usr/bin/screenfetch
+#echo "clear" >> .profile
+#echo "screenfetch" >> .profile
 rm -rf /root/.bashrc
 wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
 
@@ -57,11 +63,11 @@ sudo gem install lolcat
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
+sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 777"/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 
-#upgrade dropbear
 apt-get install zlib1g-dev
-wget https://raw.githubusercontent.com/emue25/VPSauto/dropbear-2019.78.tar.bz2
+wget https://raw.githubusercontent.com/emue25/VPSauto/master/dropbear-2019.78.tar.bz2
 bzip2 -cd dropbear-2019.78.tar.bz2 | tar xvf -
 cd dropbear-2019.78
 ./configure
@@ -99,6 +105,7 @@ refresh_pattern . 0 20% 4320
 visible_hostname zhangzi
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
+/etc/init.d/squid restart
 
 # setting banner
 rm /etc/issue.net
@@ -136,6 +143,7 @@ export EASY_RSA="${EASY_RSA:-.}"
 # setting KEY CN
 export EASY_RSA="${EASY_RSA:-.}"
 "$EASY_RSA/pkitool" client
+
 cd
 #cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key} /etc/openvpn
 cp /etc/openvpn/easy-rsa/keys/server.crt /etc/openvpn/server.crt
@@ -179,6 +187,7 @@ ncp-disable
 cipher none
 auth none
 END
+
 systemctl start openvpn@server
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
@@ -188,7 +197,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 443
+remote $MYIP 55
 persist-key
 persist-tun
 pull
@@ -206,24 +215,23 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
-http-proxy $MYIP 80
-http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.1
-http-proxy-option CUSTOM-HEADER Host www.bing.com
-http-proxy-option CUSTOM-HEADER X-Forward-Host www.bing.com
-http-proxy-option CUSTOM-HEADER Connection: Keep-Alive
-http-proxy-option CUSTOM-HEADER Proxy-Connection: keep-alive
+http-proxy $MYIP 8080
+http-proxy-option CUSTOM-HEADER X-Forward-Host: www.bing.com
+http-proxy-option CUSTOM-HEADER X-Online-Host: www.bing.com
 END
 echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
 echo '</ca>' >> /home/vps/public_html/client.ovpn
 
+cat > /home/vps/public_html/clientssl.ovpn <<-END
 cat > /home/vps/public_html/OpenVPN-Stunnel.ovpn <<-END
+apt-get install -y openvpn iptables openssl wget ca-certificates curl
 # Created by zhangzi
 auth-user-pass
 client
 dev tun
 proto tcp
-remote 127.0.0.1 443
+remote 127.0.0.1 55
 route $MYIP 255.255.255.255 net_gateway
 persist-key
 persist-tun
@@ -242,21 +250,61 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
+#ovpnssl by zhangzi
+client
+dev tun
+proto tcp
+persist-key
+persist-tun
+dev tun
+pull
+resolv-retry infinite
+nobind
+user nobody
+group nogroup
+comp-lzo
+ns-cert-type server
+verb 3
+mute 2
+mute-replay-warnings
+auth-user-pass
+redirect-gateway def1
+script-security 2
+route-method exe
+setenv opt block-outside-dns
+route-delay 2
+remote $MYIP 443
+cipher AES-128-CBC
+up /etc/openvpn/update-resolv-conf
+down /etc/openvpn/update-resolv-conf
+route $MYIP 255.255.255.255 net_gateway
 END
 echo '<ca>' >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
 echo '</ca>' >> /home/vps/public_html/OpenVPN-Stunnel.ovpn
 
-cat > /home/vps/public_html/stunnel.conf <<-END
-client = yes
-debug = 6
-[openvpn]
-accept = 127.0.0.1:443
-connect = $MYIP:587
-TIMEOUTclose = 0
-verify = 0
-sni = m.facebook.com
+#cat > /home/vps/public_html/stunnel.conf <<-END
+#client = yes
+#debug = 6
+#[openvpn]
+#accept = 127.0.0.1:55 connect = $MYIP:587
+3TIMEOUTclose = 0
+#verify = 0
+#sni = play.google.com
 END
+
+echo '<ca>' >> /home/vps/public_html/clientssl.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/clientssl.ovpn
+echo '</ca>' >> /home/vps/public_html/clientssl.ovpn
+cd /home/vps/public_html/
+tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
+tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
+cd
+
+# Restart openvpn
+/etc/init.d/openvpn restart
+/etc/init.d/openvpn start
+/etc/init.d/openvpn status
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
@@ -268,18 +316,36 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 444
-connect = 127.0.0.1:443
+accept = 587
+connect = 127.0.0.1:55
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
-accept = 445
+accept = 443
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 END
 
+sudo apt update
+sudo apt full-upgrade
+sudo apt install -y stunnel4
+cd /etc/stunnel/
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+sudo touch stunnel.conf
+echo "client = no" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "accept = 443" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "connect = 127.0.0.1:55" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "cert = /etc/stunnel/stunnel.pem" | sudo tee -a /etc/stunnel/stunnel.conf
+
+sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo cp /etc/stunnel/stunnel.pem ~
+download stunnel.pem from home directory. It is needed by client.
+/etc/init.d/stunnel4 restart
+
 #Setting UFW
 ufw allow ssh
-ufw allow 443/tcp
+ufw allow 55/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -364,8 +430,8 @@ vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn OpenVPN-Stunnel.ovpn stunnel.conf
-
+#zip configs.zip client.ovpn OpenVPN-Stunnel.ovpn stunnel.conf
+zip configs.zip client.ovpn clientssl.ovpn
 # install libxml-parser
 apt-get install -y libxml-parser-perl
 
@@ -398,7 +464,7 @@ echo "                                Modified by zhangzi                       
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Mlaysia (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malaysia (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt

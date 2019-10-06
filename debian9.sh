@@ -54,7 +54,7 @@ echo "/bin/false" >> /etc/shells
 /etc/init.d/dropbear resrart
 
 # install squid3
-
+cd
 
 # setting banner
 rm /etc/issue.net
@@ -286,8 +286,8 @@ sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
 
 # Configure Nginx
-#sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
-#cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
+sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
+cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
 
 
 # Create and Configure rc.local

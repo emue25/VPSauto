@@ -2,6 +2,15 @@
 #MODIF BY KOPET
 
 
+#repo
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+sleep 2
+echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+#Requirement
+apt update
+apt upgrade -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+
 # initializing var
 MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
 MYIP2="s/xxxxxxxxx/$MYIP/g";
@@ -11,14 +20,8 @@ MYIP2="s/xxxxxxxxx/$MYIP/g";
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
-#repo
-wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
-sleep 2
-echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
-#Requirement
-apt update
-apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
+
 
 #remove
 apt-get -y remove --purge unscd
@@ -51,38 +54,7 @@ echo "/bin/false" >> /etc/shells
 /etc/init.d/dropbear resrart
 
 # install squid3
-cat > /etc/squid/squid.conf <<-END
-acl localhost src 127.0.0.1/32 ::1
-acl to_localhost dst 127.0.0.0/8 0.0.0.0/32 ::1
-acl SSL_ports port 443
-acl Safe_ports port 80
-acl Safe_ports port 21
-acl Safe_ports port 443
-acl Safe_ports port 70
-acl Safe_ports port 210
-acl Safe_ports port 1025-65535
-acl Safe_ports port 280
-acl Safe_ports port 488
-acl Safe_ports port 591
-acl Safe_ports port 777
-acl CONNECT method CONNECT
-acl SSH dst xxxxxxxxx-xxxxxxxxx/32
-http_access allow SSH
-http_access allow manager localhost
-http_access deny manager
-http_access allow localhost
-http_access deny all
-http_port 8080
-http_port 3128
-coredump_dir /var/spool/squid3
-refresh_pattern ^ftp: 1440 20% 10080
-refresh_pattern ^gopher: 1440 0% 1440
-refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
-refresh_pattern . 0 20% 4320
-visible_hostname Wangzki
-END
-sed -i $MYIP2 /etc/squid/squid.conf;
-/etc/init.d/squid restart
+
 
 # setting banner
 rm /etc/issue.net
@@ -314,9 +286,8 @@ sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
 
 # Configure Nginx
-sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
-cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
-
+#sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
+#cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
 
 
 # Create and Configure rc.local

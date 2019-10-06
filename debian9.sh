@@ -32,13 +32,13 @@ apt-get -y install dnsutils
 ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
 
 # install webmin
-#cd
-#wget "https://raw.githubusercontent.com/emue25/VPSauto/master/webmin_1.930_all.deb"
-#dpkg --install webmin_1.801_all.deb;
-#apt-get -y -f install;
-#sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-#rm /root/webmin_1.930_all.deb
-#/etc/init.d/webmin restart
+cd
+wget "https://raw.githubusercontent.com/emue25/VPSauto/master/webmin_1.930_all.deb"
+dpkg --install webmin_1.801_all.deb;
+apt-get -y -f install;
+sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
+rm /root/webmin_1.930_all.deb
+/etc/init.d/webmin restart
 
 # install screenfetch
 cd

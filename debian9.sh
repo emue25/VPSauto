@@ -12,9 +12,9 @@ MYIP2="s/xxxxxxxxx/$MYIP/g";
 # initializing var
 #MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
 #MYIP2="s/xxxxxxxxx/$MYIP/g";
-#cd /root
-#wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/plugin.tgz"
-#wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip"
+cd /root
+wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/plugin.tgz"
+wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummenu.zip"
 
 #repo
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -

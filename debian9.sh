@@ -20,6 +20,10 @@ wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummen
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
 echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+
+sh -c 'echo "deb http://download.webmin.com/download/repository sarge contrib" > /etc/apt/sources.list.d/webmin.list'
+wget -qO - http://www.webmin.com/jcameron-key.asc | apt-key add -
+
 #Requirement
 apt update
 apt upgrade -y
@@ -92,7 +96,7 @@ refresh_pattern ^ftp: 1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440
 refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
 refresh_pattern . 0 20% 4320
-visible_hostname daybreakersx
+visible_hostname kopet
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid restart
@@ -506,6 +510,7 @@ sysctl vm.swappiness=10
 chown root:root /swapfile 
 chmod 0600 /swapfile
 cd
+
 #ssl 0vpn
 sudo apt update
 sudo apt full-upgrade
@@ -518,7 +523,6 @@ echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "accept = 443" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "connect = 127.0.0.1:55" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "cert = /etc/stunnel/stunnel.pem" | sudo tee -a /etc/stunnel/stunnel.conf
-
 sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 sudo cp /etc/stunnel/stunnel.pem ~

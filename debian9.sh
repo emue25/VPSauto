@@ -9,6 +9,9 @@ if [ $MYIP = "" ]; then
    MYIP=`ifconfig | grep 'inet addr:' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d: -f2 | awk '{ print $1}' | head -1`;
 fi
 MYIP2="s/xxxxxxxxx/$MYIP/g";
+
+clear
+service apache2 stop
 # initializing var
 #MYIP=`ifconfig eth0 | awk 'NR==2 {print $2}'`
 #MYIP2="s/xxxxxxxxx/$MYIP/g";
@@ -20,14 +23,24 @@ wget "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/premiummen
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
 echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
-
-sh -c 'echo "deb http://download.webmin.com/download/repository sarge contrib" > /etc/apt/sources.list.d/webmin.list'
-wget -qO - http://www.webmin.com/jcameron-key.asc | apt-key add -
+echo 'deb http://download.webmin.com/download/repository sarge contrib' >> /etc/apt/sources.list
+echo 'deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib' >> /etc/apt/sources.list
+wget http://www.webmin.com/jcameron-key.asc
+sudo apt-key add jcameron-key.asc
 
 #Requirement
 apt update
 apt upgrade -y
 apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+
+#Badvpn
+wget -O /usr/bin/badvpn-udpgw "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw"
+if [ "$OS" == "x86_64" ]; then
+  wget -O /usr/bin/badvpn-udpgw "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw64"
+fi
+sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
+chmod +x /usr/bin/badvpn-udpgw
+screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -44,12 +57,17 @@ ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
 
 # install webmin
 cd
-wget "https://raw.githubusercontent.com/emue25/VPSauto/master/webmin_1.930_all.deb"
-dpkg --install webmin_1.930_all.deb;
-apt-get -y -f install;
-sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-rm /root/webmin_1.930_all.deb
+apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python -y
+apt-get install libxml-parser-perl libexpat1-dev -y -f
+wget 'http://prdownloads.sourceforge.net/webadmin/webmin_1.930_all.deb'
+dpkg --install webmin_1.930_all.deb
+rm -rf webmin_1.930_all.deb
 /etc/init.d/webmin restart
+#wget "https://raw.githubusercontent.com/emue25/VPSauto/master/webmin_1.930_all.deb"
+#dpkg --install webmin_1.930_all.deb;
+#apt-get -y -f install;
+#sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
+#rm /root/webmin_1.930_all.deb
 
 # install screenfetch
 cd
@@ -57,6 +75,11 @@ wget -O /usr/bin/screenfetch "https://raw.githubusercontent.com/wangzki03/VPSaut
 chmod +x /usr/bin/screenfetch
 echo "clear" >> .profile
 echo "screenfetch" >> .profile
+# SSH Configuration
+cd
+sed -i '/Port 22/a Port 143' /etc/ssh/sshd_config
+sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
+/etc/init.d/ssh restart
 
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
@@ -65,40 +88,20 @@ echo "/bin/false" >> /etc/shells
 /etc/init.d/dropbear resrart
 
 # install squid3
-# install squid3
-cat > /etc/squid/squid.conf <<-END
-acl localhost src 127.0.0.1/32 ::1
-acl to_localhost dst 127.0.0.0/8 0.0.0.0/32 ::1
-acl SSL_ports port 443
-acl Safe_ports port 80
-acl Safe_ports port 21
-acl Safe_ports port 443
-acl Safe_ports port 70
-acl Safe_ports port 210
-acl Safe_ports port 1025-65535
-acl Safe_ports port 280
-acl Safe_ports port 488
-acl Safe_ports port 591
-acl Safe_ports port 777
-acl CONNECT method CONNECT
-acl SSH dst xxxxxxxxx-xxxxxxxxx/32
-http_access allow SSH
-http_access allow manager localhost
-http_access deny manager
-http_access allow localhost
-http_access deny all
-http_port 80
-http_port 8080
-http_port 3128
-coredump_dir /var/spool/squid3
-refresh_pattern ^ftp: 1440 20% 10080
-refresh_pattern ^gopher: 1440 0% 1440
-refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
-refresh_pattern . 0 20% 4320
-visible_hostname zhangzi
-END
+apt-get -y install squid3
+wget -O /etc/squid/squid.conf "https://raw.githubusercontent.com/vhandhu/auto-script-debian-8/master/squid3.conf"
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid restart
+
+# Install DDOS Deflate
+cd
+apt-get -y install dnsutils dsniff
+wget "https://github.com/vhandhu/auto-script-debian-8/raw/master/ddos-deflate-master.zip"
+unzip ddos-deflate-master.zip
+cd ddos-deflate-master
+./install.sh
+cd
+rm -rf ddos-deflate-master.zip
 
 # install webserver
 cd
@@ -336,7 +339,6 @@ cd /home/vps/public_html/
 tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
 tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
 cd
-# Restart openvpn
 /etc/init.d/openvpn restart
 #cat > /home/vps/public_html/OpenVPN-Stunnel.ovpn <<-END
 # Created by wang zki
@@ -540,35 +542,32 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/squid restart
 
 #clearing history
-history -c
-rm -rf /root/*
-cd /root
+rm -rf ~/.bash_history && history -c
+echo "unset HISTFILE" >> /etc/profile
 # info
 clear
 echo " "
 echo "Installation has been completed!!"
-echo "DEVICE WILL REBOOT IN 10 SECONDS"
-echo "PLEASE WAIT PATIENTLY AND RELOGIN TO YOUR VPS"
-echo " "
+echo ""
 echo "--------------------------- Configuration Setup Server -------------------------"
 echo "                         Copyright HostingTermurah.net                          "
-echo "                                Modified by wangzki                        "
+echo "                                Modified by zhangzi                             "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Manila (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malingsial (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
 echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
-echo "   - OpenVPN		: TCP 1147 "  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 55 "  | tee -a log-install.txt
 echo "   - OpenVPN-Stunnel	: 587 "  | tee -a log-install.txt
 echo "   - Dropbear		: 442"  | tee -a log-install.txt
 echo "   - Stunnel	: 443"  | tee -a log-install.txt
-echo "   - Squid Proxy	: 3128, 8080 (limit to IP Server)"  | tee -a log-install.txt
-echo "   - Nginx		: 80"  | tee -a log-install.txt
+echo "   - Squid Proxy	: 80,8000,8080 (limit to IP Server)"  | tee -a log-install.txt
+echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Premium Script Information"  | tee -a log-install.txt

@@ -54,16 +54,13 @@ ln -fs /usr/share/zoneinfo/Asia/Kuala_lumpur /etc/localtime
 
 # install webmin
 cd
-echo 'deb http://download.webmin.com/download/repository sarge contrib' >> /etc/apt/sources.list
-echo 'deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib' >> /etc/apt/sources.list
+apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
+echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list
+echo "deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib" >> /etc/apt/sources.list
 wget http://www.webmin.com/jcameron-key.asc
 apt-key add jcameron-key.asc
 apt-get update
-apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python -y
-apt-get install libxml-parser-perl libexpat1-dev -y -f
-wget 'http://prdownloads.sourceforge.net/webadmin/webmin_1.930_all.deb'
-dpkg --install webmin_1.930_all.deb
-rm -rf webmin_1.930_all.deb
+apt-get install webmin
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 /etc/init.d/webmin restart
 #wget "https://raw.githubusercontent.com/emue25/VPSauto/master/webmin_1.930_all.deb"

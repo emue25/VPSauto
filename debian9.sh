@@ -274,7 +274,7 @@ systemctl start openvpn@server
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
 cat > /home/vps/public_html/client.ovpn <<-END
-# Created by wang zki
+# Created by zhangzi
 auth-user-pass
 client
 dev tun

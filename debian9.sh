@@ -90,9 +90,9 @@ sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 /etc/init.d/dropbear resrart
 
-# install squid3
-apt-get -y install squid3
-wget -O /etc/squid/squid.conf "https://raw.githubusercontent.com/vhandhu/auto-script-debian-8/master/squid3.conf"
+# install squid
+apt-get -y install squid
+wget -O /etc/squid/squid.conf "https://raw.githubusercontent.com/emue25/cream/mei/squid3.conf"
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid restart
 

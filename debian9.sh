@@ -50,7 +50,7 @@ apt-get -y remove --purge unscd
 apt-get -y install dnsutils
 
 # set time GMT +8
-ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
+ln -fs /usr/share/zoneinfo/Asia/Kuala_lumpur /etc/localtime
 
 # install webmin
 cd

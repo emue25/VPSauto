@@ -278,7 +278,7 @@ verb 3
 ncp-disable
 cipher none
 auth none
-END
+
 systemctl start openvpn@server
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
@@ -304,7 +304,7 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
-END
+
 echo '<ca>' >> /home/vps/public_html/default.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/default.ovpn
 echo '</ca>' >> /home/vps/public_html/default.ovpn

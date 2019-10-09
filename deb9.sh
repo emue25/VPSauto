@@ -21,7 +21,7 @@ echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
 
 # set time GMT +8
-ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
+ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 
 # install webmin
 cd
@@ -47,6 +47,7 @@ sudo gem install lolcat
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
+
 # install privoxy
 cat > /etc/privoxy/config <<-END
 user-manual /usr/share/doc/privoxy/user-manual
@@ -73,6 +74,7 @@ socket-timeout 300
 permit-access 0.0.0.0/0 xxxxxxxxx
 END
 sed -i $MYIP2 /etc/privoxy/config;
+
 # install squid3
 cat > /etc/squid/squid.conf <<-END
 acl localhost src 127.0.0.1/32 ::1
@@ -109,6 +111,7 @@ visible_hostname FordSenpai
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid.restart
+
 # setting banner
 rm /etc/issue.net
 wget -O /etc/issue.net "https://raw.githubusercontent.com/brantbell/cream/mei/bannerssh"
@@ -411,28 +414,12 @@ wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Me
 unzip bashmenu.zip
 chmod +x /usr/local/bin/*
 
-# swap ram
-dd if=/dev/zero of=/swapfile bs=1024 count=4096k
-# buat swap
-mkswap /swapfile
-# jalan swapfile
-swapon /swapfile
-#auto star saat reboot
-wget https://raw.githubusercontent.com/brantbell/cream/mei/fstab
-mv ./fstab /etc/fstab
-chmod 644 /etc/fstab
-sysctl vm.swappiness=10
-#permission swapfile
-chown root:root /swapfile 
-chmod 0600 /swapfile
-cd
-
 # add eth0 to vnstat
 vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn
+zip configs.zip zhangzi.ovpn
 
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f
@@ -460,24 +447,24 @@ echo "Installation has been completed!!"
 echo " Please Reboot your VPS"
 echo "--------------------------- Configuration Setup Server -------------------------"
 echo "                       Debian Script HostingTermurah Based                      "
-echo "                                 -FordSenpai-                                   "
+echo "                                 -zhangzi-                                   "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Manila (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malingsial asu (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
 echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
-echo "   - OpenVPN		: TCP 1147 "  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 443 "  | tee -a log-install.txt
 echo "   - OpenVPN-SSL	: 587 "  | tee -a log-install.txt
-echo "   - Dropbear		: 443"  | tee -a log-install.txt
-echo "   - Stunnel		: 442"  | tee -a log-install.txt
+echo "   - Dropbear		: 442"  | tee -a log-install.txt
+echo "   - Stunnel		: 444"  | tee -a log-install.txt
 echo "   - BadVPN  	: 7300"  | tee -a log-install.txt
 echo "   - Squid Proxy	: 8080, 8000, 3128, 8888 (limit to IP Server)"  | tee -a log-install.txt
-echo "   - Nginx		: 80"  | tee -a log-install.txt
+echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Premium Script Information"  | tee -a log-install.txt
@@ -490,6 +477,6 @@ echo "   - Installation Log        : cat /root/log-install.txt"  | tee -a log-in
 echo ""  | tee -a log-install.txt
 echo "   - Webmin                  : http://$MYIP:10000/"  | tee -a log-install.txt
 echo ""
-echo "------------------------------ Script by FordSenpai -----------------------------"
+echo "------------------------------ Script by ZhangZi -----------------------------"
 echo "-----Please Reboot your VPS -----"
 sleep 5

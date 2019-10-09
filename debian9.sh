@@ -113,7 +113,6 @@ socket-timeout 300
 permit-access 0.0.0.0/0 xxxxxxxxx
 END
 sed -i $MYIP2 /etc/privoxy/config;
-/etc/init.d/privoxy restart
 
 # install squid
 apt-get -y install squid

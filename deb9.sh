@@ -25,7 +25,7 @@ ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
 
 # install webmin
 cd
-wget "https://github.com/emue25/VPSauto/raw/master/Files/Plugins/webmin_1.930_all.deb"
+wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
 dpkg --install webmin_1.930_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf

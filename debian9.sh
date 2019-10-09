@@ -94,8 +94,8 @@ confdir /etc/privoxy
 logdir /var/log/privoxy
 filterfile default.filter
 logfile logfile
-listen-address  0.0.0.0:3356
-listen-address  0.0.0.0:8086
+listen-address  0.0.0.0:3128
+listen-address  0.0.0.0:8080
 toggle  1
 enable-remote-toggle  0
 enable-remote-http-toggle  0
@@ -521,25 +521,7 @@ cd
 # compress configs
 cd /home/vps/public_html
 zip configs.zip client.ovpn clientssl.ovpn
-
-# install libxml-parser
-apt-get install -y libxml-parser-perl
-# swap ram
-dd if=/dev/zero of=/swapfile bs=1024 count=4096k
-# buat swap
-mkswap /swapfile
-# jalan swapfile
-swapon /swapfile
-#auto star saat reboot
-wget https://raw.githubusercontent.com/brantbell/cream/mei/fstab
-mv ./fstab /etc/fstab
-chmod 644 /etc/fstab
-sysctl vm.swappiness=10
-#permission swapfile
-chown root:root /swapfile 
-chmod 0600 /swapfile
 cd
-
 #ssl 0vpn
 apt update
 apt full-upgrade

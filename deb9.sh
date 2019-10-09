@@ -111,7 +111,7 @@ sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid.restart
 # setting banner
 rm /etc/issue.net
-wget -O /etc/issue.net "https://raw.githubusercontent.com/johndesu090/AutoScriptDeb8/master/Files/Others/issue.net"
+wget -O /etc/issue.net "https://raw.githubusercontent.com/brantbell/cream/mei/bannerssh"
 sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
 sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
 /etc/init.d/ssh restart
@@ -210,6 +210,7 @@ client
 dev tun
 proto tcp
 remote $MYIP 443
+http-proxy $MYIP 80
 persist-key
 persist-tun
 pull
@@ -409,6 +410,22 @@ cd /usr/local/bin/
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
 unzip bashmenu.zip
 chmod +x /usr/local/bin/*
+
+# swap ram
+dd if=/dev/zero of=/swapfile bs=1024 count=4096k
+# buat swap
+mkswap /swapfile
+# jalan swapfile
+swapon /swapfile
+#auto star saat reboot
+wget https://raw.githubusercontent.com/brantbell/cream/mei/fstab
+mv ./fstab /etc/fstab
+chmod 644 /etc/fstab
+sysctl vm.swappiness=10
+#permission swapfile
+chown root:root /swapfile 
+chmod 0600 /swapfile
+cd
 
 # add eth0 to vnstat
 vnstat -u -i eth0

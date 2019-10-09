@@ -1,5 +1,5 @@
 #!/bin/sh
-#Script by FordSenpai
+#Script by kopet
 
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
@@ -34,10 +34,14 @@ rm /root/webmin_1.920_all.deb
 
 # install screenfetch
 cd
-wget -O /usr/bin/screenfetch "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/screenfetch"
-chmod +x /usr/bin/screenfetch
-echo "clear" >> .profile
-echo "screenfetch" >> .profile
+rm -rf /root/.bashrc
+wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
+
+#text gambar
+apt-get install boxes
+# text pelangi
+apt-get install ruby -y
+gem install lolcat
 
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
@@ -129,6 +133,80 @@ sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
+# install webserver
+cd
+rm /etc/nginx/sites-enabled/default
+rm /etc/nginx/sites-available/default
+cat > /etc/nginx/nginx.conf <<END3
+user www-data;
+worker_processes 1;
+pid /var/run/nginx.pid;
+events {
+	multi_accept on;
+  worker_connections 1024;
+}
+http {
+	gzip on;
+	gzip_vary on;
+	gzip_comp_level 5;
+	gzip_types    text/plain application/x-javascript text/xml text/css;
+	autoindex on;
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  keepalive_timeout 65;
+  types_hash_max_size 2048;
+  server_tokens off;
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  access_log /var/log/nginx/access.log;
+  error_log /var/log/nginx/error.log;
+  client_max_body_size 32M;
+	client_header_buffer_size 8m;
+	large_client_header_buffers 8 8m;
+	fastcgi_buffer_size 8m;
+	fastcgi_buffers 8 8m;
+	fastcgi_read_timeout 600;
+  include /etc/nginx/conf.d/*.conf;
+}
+END3
+mkdir -p /home/vps/public_html
+wget -O /home/vps/public_html/index.html "https://shortenerku.com/"
+echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
+args='$args'
+uri='$uri'
+document_root='$document_root'
+fastcgi_script_name='$fastcgi_script_name'
+cat > /etc/nginx/conf.d/vps.conf <<END4
+server {
+  listen       85;
+  server_name  127.0.0.1 localhost;
+  access_log /var/log/nginx/vps-access.log;
+  error_log /var/log/nginx/vps-error.log error;
+  root   /home/vps/public_html;
+  location / {
+    index  index.html index.htm index.php;
+    try_files $uri $uri/ /index.php?$args;
+  }
+  location ~ \.php$ {
+    include /etc/nginx/fastcgi_params;
+    fastcgi_pass  127.0.0.1:9000;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+  }
+}
+END4
+sed -i 's/listen = \/var\/run\/php5-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
+service php5-fpm restart
+service nginx restart
+
+# setting port ssh
+sed -i '/Port 22/a Port 143' /etc/ssh/sshd_config
+sed -i '/Port 22/a Port  90' /etc/ssh/sshd_config
+sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
+/etc/init.d/ssh restart
+
+
 #install OpenVPN
 cp -r /usr/share/easy-rsa/ /etc/openvpn
 mkdir /etc/openvpn/easy-rsa/keys
@@ -204,106 +282,8 @@ END
 systemctl start openvpn@server
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/sun-tuctc.ovpn <<-END
-# Created by FordSenpai
-# https://fb.me/johndesu090
-auth-user-pass
-client
-dev tun
-proto tcp
-remote $MYIP 55
-keepalive 10 120
-persist-key
-persist-tun
-pull
-resolv-retry infinite
-nobind
-tun-mtu 1496
-comp-lzo
-verb 3
-connect-retry 5 5
-connect-retry-max 3355
-mute-replay-warnings
-redirect-gateway def1 bypass-dhcp
-script-security 2
-cipher none
-auth none
-http-proxy $MYIP 3128
-http-proxy-option CUSTOM-HEADER ""
-http-proxy-option CUSTOM-HEADER "POST https://viber.com HTTP/1.0"
-END
-echo '<ca>' >> /home/vps/public_html/sun-tuctc.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/sun-tuctc.ovpn
-echo '</ca>' >> /home/vps/public_html/sun-tuctc.ovpn
-
-cat > /home/vps/public_html/noload.ovpn <<-END
-# Created by kopet
-auth-user-pass
-client
-dev tun
-proto tcp
-remote $MYIP 55
-port 443
-persist-key
-persist-tun
-resolv-retry infinite
-comp-lzo
-remote-cert-tls server
-verb 3
-lport 110
-bind
-mute 2
-log /dev/null
-connect-retry 1 1
-connect-retry-max -1
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-END
-echo '<ca>' >> /home/vps/public_html/noload.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/noload.ovpn
-echo '</ca>' >> /home/vps/public_html/noload.ovpn
-
-cat > /home/vps/public_html/fixplan.ovpn <<-END
-# Created by FordSenpai
-# https://fb.me/johndesu090
-auth-user-pass
-client
-dev tun
-proto tcp
-remote $MYIP 55
-persist-key
-persist-tun
-resolv-retry infinite
-comp-lzo
-remote-cert-tls server
-nobind
-verb 3
-mute 2
-connect-retry 0 1
-connect-retry-max 3355
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-nice -20
-http-proxy $MYIP 8080
-http-proxy-option CUSTOM-HEADER ""
-http-proxy-option CUSTOM-HEADER "POST https://viber.com HTTP/1.1"
-http-proxy-option CUSTOM-HEADER "Proxy-Connection: Keep-Alive"
-dhcp-option DNS 1.1.1.1
-dhcp-option DNS 1.0.0.1
-END
-echo '<ca>' >> /home/vps/public_html/fixplan.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/fixplan.ovpn
-echo '</ca>' >> /home/vps/public_html/fixplan.ovpn
-
 cat > /home/vps/public_html/default.ovpn <<-END
-# Created by FordSenpai
-# https://fb.me/johndesu090
+# Created by zhangzi
 auth-user-pass
 client
 dev tun
@@ -329,139 +309,68 @@ echo '<ca>' >> /home/vps/public_html/default.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/default.ovpn
 echo '</ca>' >> /home/vps/public_html/default.ovpn
 
-cat > /home/vps/public_html/gowatchplay.ovpn <<-END
-# Created by FordSenpai
-# https://fb.me/johndesu090
-auth-user-pass
+#Create OpenVPN Config
+mkdir -p /home/vps/public_html
+cat > /home/vps/public_html/clientssl.ovpn <<-END
+# OpenVPN Configuration by sshfast.net
+# by zhangzi ovpn ssl
 client
 dev tun
 proto tcp
-remote $MYIP:55@s.ytimg.com
 persist-key
 persist-tun
-resolv-retry infinite
-comp-lzo
-remote-cert-tls server
-verb 3
-mute 2
-pull
-nobind
-connect-retry 5 5
-connect-retry-max 8080
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-http-proxy $MYIP 8080
-http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.0
-http-proxy-option CUSTOM-HEADER Host i9.ytimg.com
-http-proxy-option CUSTOM-HEADER X-Online-Host i9.ytimg.com
-http-proxy-option CUSTOM-HEADER X-Forward-Host i9.ytimg.com
-http-proxy-option CUSTOM-HEADER Connection keep-alive
-http-proxy-option CUSTOM-HEADER Proxy-Connection keep-alive
-http-proxy-retry
-END
-echo '<ca>' >> /home/vps/public_html/gowatchplay.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/gowatchplay.ovpn
-echo '</ca>' >> /home/vps/public_html/gowatchplay.ovpn
-
-cat > /home/vps/public_html/sunfreeyt.ovpn <<-END
-# Created by FordSenpai
-# https://fb.me/johndesu090
-auth-user-pass
-client
 dev tun
-proto tcp
-remote $MYIP 55
-persist-key
-persist-tun
-resolv-retry infinite
-comp-lzo
-remote-cert-tls server
-verb 3
-mute 2
-pull
-nobind
-connect-retry 5 5
-connect-retry-max 3355
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-http-proxy $MYIP 8080
-http-proxy-option CUSTOM-HEADER CONNECT HTTP/1.0
-http-proxy-option CUSTOM-HEADER Host data.iflix.com
-http-proxy-option CUSTOM-HEADER X-Online-Host data.iflix.com
-http-proxy-option CUSTOM-HEADER X-Forward-Host data.iflix.com
-http-proxy-option CUSTOM-HEADER Connection keep-alive
-http-proxy-option CUSTOM-HEADER Proxy-Connection keep-alive
-http-proxy-retry
-END
-echo '<ca>' >> /home/vps/public_html/sunfreeyt.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/sunfreeyt.ovpn
-echo '</ca>' >> /home/vps/public_html/sunfreeyt.ovpn
-
-cat > /home/vps/public_html/OpenVPN-SSL.ovpn <<-END
-# Created by FordSenpai
-auth-user-pass
-client
-dev tun
-proto tcp
-remote 127.0.0.1 55
-route $MYIP 255.255.255.255 net_gateway
-persist-key
-persist-tun
 pull
 resolv-retry infinite
 nobind
 user nobody
+group nogroup
 comp-lzo
-remote-cert-tls server
+ns-cert-type server
 verb 3
 mute 2
-connect-retry 5 5
-connect-retry-max 8080
 mute-replay-warnings
+auth-user-pass
 redirect-gateway def1
 script-security 2
-cipher none
-auth none
+route-method exe
+setenv opt block-outside-dns
+route-delay 2
+remote $MYIP 443
+cipher AES-128-CBC
+up /etc/openvpn/update-resolv-conf
+down /etc/openvpn/update-resolv-conf
+route $MYIP 255.255.255.255 net_gateway
 END
-echo '<ca>' >> /home/vps/public_html/OpenVPN-SSL.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/OpenVPN-SSL.ovpn
-echo '</ca>' >> /home/vps/public_html/OpenVPN-SSL.ovpn
+echo '<ca>' >> /home/vps/public_html/clientssl.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/clientssl.ovpn
+echo '</ca>' >> /home/vps/public_html/clientssl.ovpn
+cd /home/vps/public_html/
+tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
+tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
+cd
+# Restart openvpn
+/etc/init.d/openvpn restart
+service openvpn start
+service openvpn status
+#STUNNEL
+apt update
+apt full-upgrade
+apt install -y stunnel4
+cd /etc/stunnel/
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+sudo touch stunnel.conf
+echo "client = no" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "accept = 443" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "connect = 127.0.0.1:55" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "cert = /etc/stunnel/stunnel.pem" | sudo tee -a /etc/stunnel/stunnel.conf
 
-cat > /home/vps/public_html/stunnel.conf <<-END
-client = yes
-debug = 6
-[openvpn]
-accept = 127.0.0.1:55
-connect = $MYIP:587
-TIMEOUTclose = 0
-verify = 0
-sni = m.facebook.com
-END
-
-# Configure Stunnel
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
-cat > /etc/stunnel/stunnel.conf <<-END
-sslVersion = all
-pid = /stunnel.pid
-socket = l:TCP_NODELAY=1
-socket = r:TCP_NODELAY=1
-client = no
-[openvpn]
-accept = 587
-connect = 127.0.0.1:55
-cert = /etc/stunnel/stunnel.pem
-[dropbear]
-accept = 444
-connect = 127.0.0.1:442
-cert = /etc/stunnel/stunnel.pem
-END
+sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo cp /etc/stunnel/stunnel.pem ~
+# download stunnel.pem from home directory. It is needed by client.
+/etc/init.d/stunnel4 restart
 
 #Setting UFW
 ufw allow ssh
@@ -573,6 +482,7 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart
 /etc/init.d/privoxy restart
+/etc/init.d/stunnel4 restart
 
 #clearing history
 history -c

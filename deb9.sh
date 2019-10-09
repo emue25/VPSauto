@@ -48,33 +48,6 @@ sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 
-# install privoxy
-cat > /etc/privoxy/config <<-END
-user-manual /usr/share/doc/privoxy/user-manual
-confdir /etc/privoxy
-logdir /var/log/privoxy
-filterfile default.filter
-logfile logfile
-listen-address  0.0.0.0:3356
-listen-address  0.0.0.0:8086
-toggle  1
-enable-remote-toggle  0
-enable-remote-http-toggle  0
-enable-edit-actions 0
-enforce-blocks 0
-buffer-limit 4096
-enable-proxy-authentication-forwarding 1
-forwarded-connect-retries  1
-accept-intercepted-requests 1
-allow-cgi-request-crunching 1
-split-large-forms 0
-keep-alive-timeout 5
-tolerate-pipelining 1
-socket-timeout 300
-permit-access 0.0.0.0/0 xxxxxxxxx
-END
-sed -i $MYIP2 /etc/privoxy/config;
-
 # install squid3
 cat > /etc/squid/squid.conf <<-END
 acl localhost src 127.0.0.1/32 ::1
@@ -94,16 +67,14 @@ acl Safe_ports port 591
 acl Safe_ports port 777
 acl CONNECT method CONNECT
 acl SSH dst xxxxxxxxx-xxxxxxxxx/32
-acl SSH dst 103.103.0.118-103.103.0.118/32
 http_access allow SSH
 http_access allow manager localhost
 http_access deny manager
 http_access allow localhost
 http_access deny all
 http_port 8080
-http_port 8000
+http_port 80
 http_port 3128
-http_port 8888
 coredump_dir /var/spool/squid3
 refresh_pattern ^ftp: 1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440
@@ -112,7 +83,7 @@ refresh_pattern . 0 20% 4320
 visible_hostname FordSenpai
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
-
+/etc/init.d/squid.restart
 # setting banner
 rm /etc/issue.net
 wget -O /etc/issue.net "https://raw.githubusercontent.com/johndesu090/AutoScriptDeb8/master/Files/Others/issue.net"
@@ -169,7 +140,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 55
+port 443
 proto tcp
 dev tun
 ca ca.crt
@@ -200,19 +171,20 @@ verb 3
 ncp-disable
 cipher none
 auth none
+
 END
 systemctl start openvpn@server
 
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/client.ovpn <<-END
-# Created by FordSenpai
-# https://fb.me/johndesu090
+cat > /home/vps/public_html/zhangzi.ovpn <<-END
+
+# Created by kopet
 auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 55
+remote $MYIP 443
 persist-key
 persist-tun
 pull
@@ -230,37 +202,38 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
-END
-echo '<ca>' >> /home/vps/public_html/client.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
-echo '</ca>' >> /home/vps/public_html/client.ovpn
 
-# Restart openvpn
-/etc/init.d/openvpn restart
-service openvpn start
-service openvpn status
+END
+echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
+echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
+
 sslVersion = all
 pid = /stunnel.pid
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
+
 [openvpn]
 accept = 587
 connect = 127.0.0.1:55
 cert = /etc/stunnel/stunnel.pem
+
 [dropbear]
-accept = 442
-connect = 127.0.0.1:443
+accept = 444
+connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
+
 END
+
 #Setting UFW
 ufw allow ssh
-ufw allow 55/tcp
+ufw allow 443/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -324,7 +297,6 @@ sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
 
 # Configure Nginx
-# install webserver
 cd
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
@@ -362,7 +334,7 @@ http {
 }
 END3
 mkdir -p /home/vps/public_html
-wget -O /home/vps/public_html/index.html "https://shortenerku.com/"
+wget -O /home/vps/public_html/index.html "https://www.sshfast.net/"
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
 args='$args'
 uri='$uri'
@@ -387,17 +359,18 @@ server {
   }
 }
 END4
-sed -i 's/listen = \/var\/run\/php5-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
-/etc/init.d/php7.0-fpm restart
+sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
 /etc/init.d/nginx restart
+
 #Create Admin
 useradd admin
-echo "admin:mania" | chpasswd
+echo "admin:kopet" | chpasswd
 
 
 # Create and Configure rc.local
 cat > /etc/rc.local <<-END
 #!/bin/sh -e
+
 exit 0
 END
 chmod +x /etc/rc.local
@@ -411,31 +384,14 @@ cd /usr/local/bin/
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
 unzip bashmenu.zip
 chmod +x /usr/local/bin/*
-#fix
-wget "https://raw.githubusercontent.com/emue25/cream/mei/fix-debian-useradd.sh"
-chmod +x fix-debian-useradd.sh
-./fix-debian-useradd.sh
+
 # add eth0 to vnstat
 vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn clientssl.ovpn
-# swap ram
-dd if=/dev/zero of=/swapfile bs=1024 count=4096k
-# buat swap
-mkswap /swapfile
-# jalan swapfile
-swapon /swapfile
-#auto star saat reboot
-wget https://raw.githubusercontent.com/brantbell/cream/mei/fstab
-mv ./fstab /etc/fstab
-chmod 644 /etc/fstab
-sysctl vm.swappiness=10
-#permission swapfile
-chown root:root /swapfile 
-chmod 0600 /swapfile
-cd
+zip configs.zip client.ovpn
+
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f
 
@@ -443,14 +399,14 @@ apt-get install libxml-parser-perl -y -f
 vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
-/etc/init.d/nginx start
-/etc/init.d/php7.0-fpm start
-/etc/init.d/vnstat restart
-/etc/init.d/openvpn restart
-/etc/init.d/dropbear restart
-/etc/init.d/fail2ban restart
-/etc/init.d/squid restart
-/etc/init.d/privoxy restart
+service nginx start
+service php7.0-fpm start
+service vnstat restart
+service openvpn restart
+service dropbear restart
+service fail2ban restart
+service squid restart
+
 #clearing history
 history -c
 rm -rf /root/*

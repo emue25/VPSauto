@@ -49,10 +49,10 @@ sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 
 # install dropbear
-sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
-sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
-echo "/bin/false" >> /etc/shells
-/etc/init.d/dropbear resrart
+#sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
+#sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
+#echo "/bin/false" >> /etc/shells
+#/etc/init.d/dropbear resrart
 
 # install squid
 apt-get -y install squid
@@ -61,12 +61,12 @@ sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid restart
 
 # setting banner
-rm /etc/issue.net
-wget -O /etc/issue.net "https://raw.githubusercontent.com/brantbell/cream/mei/bannerssh"
-sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
-sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
-/etc/init.d/ssh restart
-/etc/init.d/dropbear restart
+#rm /etc/issue.net
+#wget -O /etc/issue.net "https://raw.githubusercontent.com/brantbell/cream/mei/bannerssh"
+#sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
+#sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
+#/etc/init.d/ssh restart
+#/etc/init.d/dropbear restart
 
 # install badvpn
 wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/brantbell/cream/mei/badvpn-udpgw"
@@ -336,7 +336,7 @@ http {
 }
 END3
 mkdir -p /home/vps/public_html
-wget -O /home/vps/public_html/index.html "https://www.sshfast.net/"
+wget -O /home/vps/public_html/index.html "https://sshfast.net/"
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
 args='$args'
 uri='$uri'
@@ -367,9 +367,6 @@ sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/p
 # Configure Nginx
 #sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
 #cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
-#Create Admin
-useradd kopet
-echo "kopet:mania" | chpasswd
 
 # Create and Configure rc.local
 cat > /etc/rc.local <<-END
@@ -417,7 +414,7 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/nginx start
 /etc/init.d/php7.0-fpm start
 /etc/init.d/openvpn restart
-/etc/init.d/dropbear restart
+#/etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart
 

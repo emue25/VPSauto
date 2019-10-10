@@ -387,7 +387,7 @@ server {
   }
 }
 END4
-sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
+sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.0/fpm/pool.d/www.conf
 /etc/init.d/nginx restart
 
 # Configure Nginx
@@ -460,7 +460,6 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart
-/etc/init.d/privoxy restart
 
 #clearing history
 history -c

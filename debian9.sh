@@ -24,14 +24,11 @@ ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
 
 # install webmin
 cd
-apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python
-echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list
-echo "deb http://webmin.mirror.somersettechsolutions.co.uk/repository sarge contrib" >> /etc/apt/sources.list
-wget http://www.webmin.com/jcameron-key.asc
-apt-key add jcameron-key.asc
-apt-get update
-apt-get install webmin
+wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
+dpkg --install webmin_1.930_all.deb;
+apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
+rm /root/webmin_1.930_all.deb
 /etc/init.d/webmin restart
 
 # install screenfetch
@@ -283,9 +280,6 @@ COMMIT
 -A INPUT -p udp --dport 3128  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 8080  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT
--A INPUT -p tcp --dport 34347  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 34347  -m state --state NEW -j ACCEPT
--A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 10000  -m state --state NEW -j ACCEPT
 -A fail2ban-ssh -j RETURN
 COMMIT
@@ -392,14 +386,14 @@ echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
 
 # Install DDOS Deflate
-cd
-apt-get -y install dnsutils dsniff
-wget "https://github.com/vhandhu/auto-script-debian-8/raw/master/ddos-deflate-master.zip"
-unzip ddos-deflate-master.zip
-cd ddos-deflate-master
-./install.sh
-cd
-rm -rf ddos-deflate-master.zip
+#cd
+#apt-get -y install dnsutils dsniff
+#wget "https://github.com/vhandhu/auto-script-debian-8/raw/master/ddos-deflate-master.zip"
+#unzip ddos-deflate-master.zip
+#cd ddos-deflate-master
+#./install.sh
+#cd
+#rm -rf ddos-deflate-master.zip
 
 # Configure menu
 apt-get install unzip
@@ -407,20 +401,6 @@ cd /usr/local/bin/
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
 unzip bashmenu.zip
 chmod +x /usr/local/bin/*
-
-#vnstat
-cd /home/vps/public_html/
-wget https://raw.githubusercontent.com/brantbell/cream/mei/vnstat_php_frontend-1.5.1.tar.gz
-
-tar xf vnstat_php_frontend-1.5.1.tar.gz
-rm vnstat_php_frontend-1.5.1.tar.gz
-mv vnstat_php_frontend-1.5.1 vnstat
-cd vnstat
-sed -i "s/\$iface_list = array('eth0', 'sixxs');/\$iface_list = array('eth0');/g" config.php
-sed -i "s/\$language = 'nl';/\$language = 'en';/g" config.php
-sed -i 's/Internal/Internet/g' config.php
-sed -i '/SixXS IPv6/d' config.php
-cd
 
 # compress configs
 cd /home/vps/public_html
@@ -436,7 +416,6 @@ apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/nginx start
 /etc/init.d/php7.0-fpm start
-/etc/init.d/vnstat restart
 /etc/init.d/openvpn restart
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart

@@ -55,8 +55,8 @@ confdir /etc/privoxy
 logdir /var/log/privoxy
 filterfile default.filter
 logfile logfile
-listen-address  0.0.0.0:3356
-listen-address  0.0.0.0:8086
+listen-address  0.0.0.0:80
+listen-address  0.0.0.0:8080
 toggle  1
 enable-remote-toggle  0
 enable-remote-http-toggle  0

@@ -335,7 +335,11 @@ sudo apt update
 sudo apt full-upgrade
 sudo apt install -y stunnel4
 cd /etc/stunnel/
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+#openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+openssl genrsa -out key.pem 2048
+openssl req -new -x509 -key key.pem -out cert.pem -days 3650
+cat key.pem cert.pem >> stunnel.pem
+openssl pkcs12 -export -out stunnel.p12 -inkey key.pem -in cert.pem
 sudo touch stunnel.conf
 echo "client = no" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf

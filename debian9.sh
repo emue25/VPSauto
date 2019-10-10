@@ -36,10 +36,14 @@ sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 
 # install screenfetch
 cd
-wget -O /usr/bin/screenfetch "https://raw.githubusercontent.com/wangzki03/VPSauto/master/tool/screenfetch"
-chmod +x /usr/bin/screenfetch
-echo "clear" >> .profile
-echo "screenfetch" >> .profile
+rm -rf /root/.bashrc
+wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
+
+#text gambar
+apt-get install boxes
+# text pelangi
+sudo apt-get install ruby -y
+sudo gem install lolcat
 
 # SSH Configuration
 cd
@@ -52,33 +56,6 @@ sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 /etc/init.d/dropbear resrart
-
-# install privoxy
-cat > /etc/privoxy/config <<-END
-user-manual /usr/share/doc/privoxy/user-manual
-confdir /etc/privoxy
-logdir /var/log/privoxy
-filterfile default.filter
-logfile logfile
-listen-address  0.0.0.0:3128
-listen-address  0.0.0.0:8080
-toggle  1
-enable-remote-toggle  0
-enable-remote-http-toggle  0
-enable-edit-actions 0
-enforce-blocks 0
-buffer-limit 4096
-enable-proxy-authentication-forwarding 1
-forwarded-connect-retries  1
-accept-intercepted-requests 1
-allow-cgi-request-crunching 1
-split-large-forms 0
-keep-alive-timeout 5
-tolerate-pipelining 1
-socket-timeout 300
-permit-access 0.0.0.0/0 xxxxxxxxx
-END
-sed -i $MYIP2 /etc/privoxy/config;
 
 # install squid
 apt-get -y install squid
@@ -305,8 +282,11 @@ COMMIT
 -A INPUT -p tcp --dport 3128  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 3128  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 8080  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT 
+-A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 34347  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 34347  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 10000  -m state --state NEW -j ACCEPT
 -A fail2ban-ssh -j RETURN
 COMMIT
 *raw
@@ -394,7 +374,7 @@ sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/p
 #sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
 #cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
 #Create Admin
-useradd admin
+useradd kopet
 echo "kopet:mania" | chpasswd
 
 # Create and Configure rc.local
@@ -406,6 +386,7 @@ chmod +x /etc/rc.local
 sed -i '$ i\echo "nameserver 8.8.8.8" > /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
+
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local

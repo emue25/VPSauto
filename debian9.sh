@@ -213,7 +213,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 443
+port 55
 proto tcp
 dev tun
 ca ca.crt
@@ -255,7 +255,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 443
+remote $MYIP 55
 http-proxy $MYIP 80
 persist-key
 persist-tun
@@ -326,7 +326,7 @@ cd
 
 #Setting UFW
 ufw allow ssh
-ufw allow 443/tcp
+ufw allow 55/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -470,7 +470,7 @@ server {
   }
 }
 END4
-sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
+sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.0/fpm/pool.d/www.conf
 /etc/init.d/nginx restart
 
 #Create Admin
@@ -500,7 +500,7 @@ vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip zhangzi.ovpn
+zip configs.zip zhangzi.ovpn clientssl.ovpn
 
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f
@@ -539,12 +539,10 @@ echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
 echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
-echo "   - OpenVPN		: TCP 443 "  | tee -a log-install.txt
-echo "   - OpenVPN-SSL	: 587 "  | tee -a log-install.txt
-echo "   - Dropbear		: 442"  | tee -a log-install.txt
-echo "   - Stunnel		: 444"  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 55 "  | tee -a log-install.txt
+echo "   - OpenVPN-SSL	: 443 "  | tee -a log-install.txt
 echo "   - BadVPN  	: 7300"  | tee -a log-install.txt
-echo "   - Squid Proxy	: 8080, 8000, 3128, 8888 (limit to IP Server)"  | tee -a log-install.txt
+echo "   - Squid Proxy	: 8080, 80, 3128, (limit to IP Server)"  | tee -a log-install.txt
 echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt

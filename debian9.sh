@@ -1,5 +1,5 @@
 #!/bin/sh
-#MODIF BY KOPET
+#Script modif by kopet
 
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
@@ -7,7 +7,7 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 privoxy squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
 
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
@@ -19,8 +19,9 @@ wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Me
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
-# set time GMT +7
-ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+
+# set time GMT +8
+ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 
 # install webmin
 cd
@@ -39,26 +40,77 @@ wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bas
 #text gambar
 apt-get install boxes
 # text pelangi
-sudo apt-get install ruby -y
-sudo gem install lolcat
-
-# SSH Configuration
-cd
-sed -i '/Port 22/a Port 143' /etc/ssh/sshd_config
-sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
-/etc/init.d/ssh restart
+apt-get install ruby -y
+gem install lolcat
 
 # install dropbear
 #sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 #sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 #echo "/bin/false" >> /etc/shells
-#/etc/init.d/dropbear resrart
 
-# install squid
-apt-get -y install squid
-wget -O /etc/squid/squid.conf "https://raw.githubusercontent.com/emue25/cream/mei/squid3.conf"
+# install privoxy
+cat > /etc/privoxy/config <<-END
+user-manual /usr/share/doc/privoxy/user-manual
+confdir /etc/privoxy
+logdir /var/log/privoxy
+filterfile default.filter
+logfile logfile
+listen-address  0.0.0.0:3356
+listen-address  0.0.0.0:8086
+toggle  1
+enable-remote-toggle  0
+enable-remote-http-toggle  0
+enable-edit-actions 0
+enforce-blocks 0
+buffer-limit 4096
+enable-proxy-authentication-forwarding 1
+forwarded-connect-retries  1
+accept-intercepted-requests 1
+allow-cgi-request-crunching 1
+split-large-forms 0
+keep-alive-timeout 5
+tolerate-pipelining 1
+socket-timeout 300
+permit-access 0.0.0.0/0 xxxxxxxxx
+END
+sed -i $MYIP2 /etc/privoxy/config;
+
+# install squid3
+cat > /etc/squid/squid.conf <<-END
+acl localhost src 127.0.0.1/32 ::1
+acl to_localhost dst 127.0.0.0/8 0.0.0.0/32 ::1
+acl SSL_ports port 443
+acl Safe_ports port 80
+acl Safe_ports port 21
+acl Safe_ports port 442
+acl Safe_ports port 443
+acl Safe_ports port 444
+acl Safe_ports port 70
+acl Safe_ports port 210
+acl Safe_ports port 1025-65535
+acl Safe_ports port 280
+acl Safe_ports port 488
+acl Safe_ports port 591
+acl Safe_ports port 777
+acl CONNECT method CONNECT
+acl SSH dst xxxxxxxxx-xxxxxxxxx/32
+http_access allow SSH
+http_access allow manager localhost
+http_access deny manager
+http_access allow localhost
+http_access deny all
+http_port 8080
+http_port 80
+http_port 3128
+coredump_dir /var/spool/squid3
+refresh_pattern ^ftp: 1440 20% 10080
+refresh_pattern ^gopher: 1440 0% 1440
+refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
+refresh_pattern . 0 20% 4320
+visible_hostname FordSenpai
+END
 sed -i $MYIP2 /etc/squid/squid.conf;
-/etc/init.d/squid restart
+/etc/init.d/squid.restart
 
 # setting banner
 #rm /etc/issue.net
@@ -68,14 +120,59 @@ sed -i $MYIP2 /etc/squid/squid.conf;
 #/etc/init.d/ssh restart
 #/etc/init.d/dropbear restart
 
+# install mrtg
+wget -O /etc/snmp/snmpd.conf "https://raw.githubusercontent.com/brantbell/cream/mei/snmpd.conf"
+wget -O /root/mrtg-mem.sh "https://raw.githubusercontent.com/brantbell/cream/mei/mrtg-mem.sh"
+chmod +x /root/mrtg-mem.sh
+cd /etc/snmp/
+sed -i 's/TRAPDRUN=no/TRAPDRUN=yes/g' /etc/default/snmpd
+service snmpd restart
+snmpwalk -v 1 -c public localhost 1.3.6.1.4.1.2021.10.1.3.1
+mkdir -p /home/vps/public_html/mrtg
+cfgmaker --zero-speed 100000000 --global 'WorkDir: /home/vps/public_html/mrtg' --output /etc/mrtg.cfg public@localhost
+curl "https://raw.githubusercontent.com/brantbell/cream/mei/mrtg.conf" >> /etc/mrtg.cfg
+sed -i 's/WorkDir: \/var\/www\/mrtg/# WorkDir: \/var\/www\/mrtg/g' /etc/mrtg.cfg
+sed -i 's/# Options\[_\]: growright, bits/Options\[_\]: growright/g' /etc/mrtg.cfg
+indexmaker --output=/home/vps/public_html/mrtg/index.html /etc/mrtg.cfg
+if [ -x /usr/bin/mrtg ] && [ -r /etc/mrtg.cfg ]; then mkdir -p /var/log/mrtg ; env LANG=C /usr/bin/mrtg /etc/mrtg.cfg 2>&1 | tee -a /var/log/mrtg/mrtg.log ; fi
+if [ -x /usr/bin/mrtg ] && [ -r /etc/mrtg.cfg ]; then mkdir -p /var/log/mrtg ; env LANG=C /usr/bin/mrtg /etc/mrtg.cfg 2>&1 | tee -a /var/log/mrtg/mrtg.log ; fi
+if [ -x /usr/bin/mrtg ] && [ -r /etc/mrtg.cfg ]; then mkdir -p /var/log/mrtg ; env LANG=C /usr/bin/mrtg /etc/mrtg.cfg 2>&1 | tee -a /var/log/mrtg/mrtg.log ; fi
+cd
+
 # install badvpn
-wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/brantbell/cream/mei/badvpn-udpgw"
+wget -O /usr/bin/badvpn-udpgw "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw"
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/brantbell/cream/mei/badvpn-udpgw64"
+  wget -O /usr/bin/badvpn-udpgw "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw64"
 fi
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
+
+#install PPTP
+apt-get -y install pptpd
+cat > /etc/ppp/pptpd-options <<END
+name pptpd
+refuse-pap
+refuse-chap
+refuse-mschap
+require-mschap-v2
+require-mppe-128
+ms-dns 8.8.8.8
+ms-dns 8.8.4.4
+proxyarp
+nodefaultroute
+lock
+nobsdcomp
+END
+echo "option /etc/ppp/pptpd-options" > /etc/pptpd.conf
+echo "logwtmp" >> /etc/pptpd.conf
+echo "localip 10.1.0.1" >> /etc/pptpd.conf
+echo "remoteip 10.1.0.5-100" >> /etc/pptpd.conf
+cat >> /etc/ppp/ip-up <<END
+ifconfig ppp0 mtu 1400
+END
+mkdir /var/lib/premium-script
+/etc/init.d/pptpd restart
 
 #install OpenVPN
 cp -r /usr/share/easy-rsa/ /etc/openvpn
@@ -83,15 +180,15 @@ mkdir /etc/openvpn/easy-rsa/keys
 
 # replace bits
 sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="PH"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Rizal"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Antipolo"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="EZ"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_EMAIL="me@myhost.mydomain"|export KEY_EMAIL="ezvpn@gmail.com"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_OU="MyOrganizationalUnit"|export KEY_OU="EZvpn"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_NAME="EasyRSA"|export KEY_NAME="EZvpn"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_OU=changeme|export KEY_OU=EZvpn|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Tarlac"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Concepcion"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="JohnFordTV"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_EMAIL="me@myhost.mydomain"|export KEY_EMAIL="exodia090@gmail.com"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_OU="MyOrganizationalUnit"|export KEY_OU="FordSenpai"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_NAME="EasyRSA"|export KEY_NAME="FordSenpai"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_OU=changeme|export KEY_OU=FordSenpai|' /etc/openvpn/easy-rsa/vars
 #Create Diffie-Helman Pem
-openssl dhparam -out /etc/openvpn/dh2048.pem 2048
+openssl dhparam -out /etc/openvpn/dh1024.pem 1024
 # Create PKI
 cd /etc/openvpn/easy-rsa
 cp openssl-1.0.0.cnf openssl.cnf
@@ -116,13 +213,13 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 55
+port 443
 proto tcp
 dev tun
 ca ca.crt
 cert server.crt
 key server.key
-dh dh2048.pem
+dh dh1024.pem
 verify-client-cert none
 username-as-common-name
 plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
@@ -149,15 +246,17 @@ cipher none
 auth none
 END
 systemctl start openvpn@server
+
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/client.ovpn <<-END
-# Created by zhangzi
+cat > /home/vps/public_html/zhangzi.ovpn <<-END
+# Created by kopet
 auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 55
+remote $MYIP 443
+http-proxy $MYIP 80
 persist-key
 persist-tun
 pull
@@ -176,15 +275,15 @@ script-security 2
 cipher none
 auth none
 END
-echo '<ca>' >> /home/vps/public_html/client.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
-echo '</ca>' >> /home/vps/public_html/client.ovpn
-
+echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
+echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
+cd
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
 cat > /home/vps/public_html/clientssl.ovpn <<-END
-# OpenVPN sshfast.net
-# modif by zhangzi ovpn ssl
+# OpenVPN Configuration by sshfast.net
+# by zhangzi ovpn ssl
 client
 dev tun
 proto tcp
@@ -220,31 +319,34 @@ cd /home/vps/public_html/
 tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
 tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
 cd
+# Restart openvpn
 /etc/init.d/openvpn restart
+/etc/init.d/openvpn start
+/etc/init.d/openvpn status
 
-#ssl 0vpn
-apt update
-apt full-upgrade
-apt install -y stunnel4
+#Setting UFW
+ufw allow ssh
+ufw allow 443/tcp
+sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
+sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
+
+#stunnel4
+sudo apt update
+sudo apt full-upgrade
+sudo apt install -y stunnel4
 cd /etc/stunnel/
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
-touch stunnel.conf
+sudo touch stunnel.conf
 echo "client = no" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "accept = 443" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "connect = 127.0.0.1:55" | sudo tee -a /etc/stunnel/stunnel.conf
 echo "cert = /etc/stunnel/stunnel.pem" | sudo tee -a /etc/stunnel/stunnel.conf
-sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-cp /etc/stunnel/stunnel.pem ~
+sudo cp /etc/stunnel/stunnel.pem ~
 # download stunnel.pem from home directory. It is needed by client.
 /etc/init.d/stunnel4 restart
-
-#Setting UFW
-ufw allow ssh
-ufw allow 55/tcp
-sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
-sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
 # set ipv4 forward
 echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -273,14 +375,21 @@ COMMIT
 -A INPUT -p tcp --dport 143  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 442  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 443  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 444  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 587  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 1147  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 1147  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 8085  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 8085  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 8888  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 8888  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 3128  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 3128  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 8080  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 10000  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT 
+-A INPUT -p tcp --dport 7300  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
+-A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
 -A fail2ban-ssh -j RETURN
 COMMIT
 *raw
@@ -298,7 +407,7 @@ END
 sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
 
-# install webserver
+# Configure Nginx
 cd
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
@@ -336,7 +445,7 @@ http {
 }
 END3
 mkdir -p /home/vps/public_html
-wget -O /home/vps/public_html/index.html "https://sshfast.net/"
+wget -O /home/vps/public_html/index.html "https://www.sshfast.net/"
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
 args='$args'
 uri='$uri'
@@ -361,12 +470,13 @@ server {
   }
 }
 END4
-sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.0/fpm/pool.d/www.conf
+sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
 /etc/init.d/nginx restart
 
-# Configure Nginx
-#sed -i 's/\/var\/www\/html;/\/home\/vps\/public_html\/;/g' /etc/nginx/sites-enabled/default
-#cp /var/www/html/index.nginx-debian.html /home/vps/public_html/index.html
+#Create Admin
+useradd admin
+echo "admin:kopet" | chpasswd
+
 
 # Create and Configure rc.local
 cat > /etc/rc.local <<-END
@@ -378,20 +488,6 @@ sed -i '$ i\echo "nameserver 8.8.8.8" > /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
-# disable ipv6
-echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
-sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
-
-# Install DDOS Deflate
-#cd
-#apt-get -y install dnsutils dsniff
-#wget "https://github.com/vhandhu/auto-script-debian-8/raw/master/ddos-deflate-master.zip"
-#unzip ddos-deflate-master.zip
-#cd ddos-deflate-master
-#./install.sh
-#cd
-#rm -rf ddos-deflate-master.zip
-
 # Configure menu
 apt-get install unzip
 cd /usr/local/bin/
@@ -399,20 +495,23 @@ wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Me
 unzip bashmenu.zip
 chmod +x /usr/local/bin/*
 
+# add eth0 to vnstat
+vnstat -u -i eth0
+
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn clientssl.ovpn
-cd
+zip configs.zip zhangzi.ovpn
 
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f
 
 # finalizing
-/etc/init.d/vnstat restart
+vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/nginx start
 /etc/init.d/php7.0-fpm start
+/etc/init.d/vnstat restart
 /etc/init.d/openvpn restart
 #/etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
@@ -422,28 +521,30 @@ chown -R www-data:www-data /home/vps/public_html
 history -c
 rm -rf /root/*
 cd /root
+# info
 clear
 echo " "
 echo "Installation has been completed!!"
-echo ""
+echo " Please Reboot your VPS"
 echo "--------------------------- Configuration Setup Server -------------------------"
-echo "                         Copyright HostingTermurah.net                          "
-echo "                                Modified by zhangzi                             "
+echo "                       Debian Script HostingTermurah Based                      "
+echo "                                 -zhangzi-                                   "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Malingsial (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malingsial asu (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
 echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
-echo "   - OpenVPN		: TCP 55 "  | tee -a log-install.txt
-echo "   - OpenVPN-Stunnel	: 587 "  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 443 "  | tee -a log-install.txt
+echo "   - OpenVPN-SSL	: 587 "  | tee -a log-install.txt
 echo "   - Dropbear		: 442"  | tee -a log-install.txt
-echo "   - Stunnel	: 443"  | tee -a log-install.txt
-echo "   - Squid Proxy	: 80,8000,8080 (limit to IP Server)"  | tee -a log-install.txt
+echo "   - Stunnel		: 444"  | tee -a log-install.txt
+echo "   - BadVPN  	: 7300"  | tee -a log-install.txt
+echo "   - Squid Proxy	: 8080, 8000, 3128, 8888 (limit to IP Server)"  | tee -a log-install.txt
 echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
@@ -457,4 +558,6 @@ echo "   - Installation Log        : cat /root/log-install.txt"  | tee -a log-in
 echo ""  | tee -a log-install.txt
 echo "   - Webmin                  : http://$MYIP:10000/"  | tee -a log-install.txt
 echo ""
-echo "------------------------------ Modified by ZHANG-ZI -----------------------------"
+echo "------------------------------ Script by ZhangZi -----------------------------"
+echo "-----Please Reboot your VPS -----"
+sleep 5

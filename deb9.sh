@@ -55,8 +55,8 @@ confdir /etc/privoxy
 logdir /var/log/privoxy
 filterfile default.filter
 logfile logfile
-listen-address  0.0.0.0:3356
-listen-address  0.0.0.0:8086
+listen-address  0.0.0.0:3128
+listen-address  0.0.0.0:8000
 toggle  1
 enable-remote-toggle  0
 enable-remote-http-toggle  0
@@ -100,6 +100,7 @@ http_access deny manager
 http_access allow localhost
 http_access deny all
 http_port 8080
+http_port 8000
 http_port 80
 http_port 3128
 coredump_dir /var/spool/squid3
@@ -114,7 +115,7 @@ sed -i $MYIP2 /etc/squid/squid.conf;
 
 # setting banner
 rm /etc/issue.net
-wget -O /etc/issue.net "https://raw.githubusercontent.com/brantbell/cream/mei/bannerssh"
+wget -O /etc/issue.net "https://raw.githubusercontent.com/emue25/cream/mei/bannerssh"
 sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
 sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
 /etc/init.d/ssh restart
@@ -250,7 +251,7 @@ client = no
 
 [openvpn]
 accept = 587
-connect = 127.0.0.1:55
+connect = 127.0.0.1:443
 cert = /etc/stunnel/stunnel.pem
 
 [dropbear]
@@ -308,6 +309,9 @@ COMMIT
 -A INPUT -p tcp --dport 7300  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
 -A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 55  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 55  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 587 -j ACCEPT
 -A fail2ban-ssh -j RETURN
 COMMIT
 *raw
@@ -408,12 +412,19 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-apt-get install unzip
-cd /usr/local/bin/
-wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
-unzip bashmenu.zip
-chmod +x /usr/local/bin/*
+wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
+#apt-get install unzip
+#cd /usr/local/bin/
+#wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
+#unzip bashmenu.zip
+#chmod +x /usr/local/bin/*
 
+# cronjob
+echo "02 */12 * * * root service dropbear restart" > /etc/cron.d/dropbear
+echo "00 23 * * * root /usr/bin/disable-user-expire" > /etc/cron.d/disable-user-expire
+echo "0 */12 * * * root /sbin/reboot" > /etc/cron.d/reboot
+echo "00 01 * * * root echo 3 > /proc/sys/vm/drop_caches && swapoff -a && swapon -a" > /etc/cron.d/clearcacheram3swap
+echo "*/3 * * * * root /usr/bin/clearcache.sh" > /etc/cron.d/clearcache1
 # add eth0 to vnstat
 vnstat -u -i eth0
 
@@ -446,8 +457,8 @@ echo " "
 echo "Installation has been completed!!"
 echo " Please Reboot your VPS"
 echo "--------------------------- Configuration Setup Server -------------------------"
-echo "                       Debian Script HostingTermurah Based                      "
-echo "                                 -zhangzi-                                   "
+echo "                       Debian9 Script HostingTermurah Based                      "
+echo "                                 -modifikasi by zhangzi-                                   "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
@@ -463,7 +474,7 @@ echo "   - OpenVPN-SSL	: 587 "  | tee -a log-install.txt
 echo "   - Dropbear		: 442"  | tee -a log-install.txt
 echo "   - Stunnel		: 444"  | tee -a log-install.txt
 echo "   - BadVPN  	: 7300"  | tee -a log-install.txt
-echo "   - Squid Proxy	: 8080, 8000, 3128, 8888 (limit to IP Server)"  | tee -a log-install.txt
+echo "   - Squid Proxy	: 8080, 8000, 3128, 80 (limit to IP Server)"  | tee -a log-install.txt
 echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt

@@ -302,8 +302,6 @@ COMMIT
 -A INPUT -p tcp --dport 7300  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
 -A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
--A INPUT -p tcp --dport 55  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 55  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 587 -j ACCEPT
 -A fail2ban-ssh -j RETURN
 COMMIT

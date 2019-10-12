@@ -245,8 +245,8 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 587
-connect = 127.0.0.1:1194
+accept = 444
+connect = 127.0.0.1:55
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
 accept = 443

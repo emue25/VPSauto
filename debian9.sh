@@ -169,7 +169,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 1194
+port 55
 proto tcp
 dev tun
 ca ca.crt
@@ -211,7 +211,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 1194
+remote $MYIP 55
 http-proxy $MYIP 80
 persist-key
 persist-tun
@@ -256,7 +256,7 @@ END
 
 #Setting UFW
 ufw allow ssh
-ufw allow 1194/tcp
+ufw allow 55/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 

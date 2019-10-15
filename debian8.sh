@@ -1,745 +1,485 @@
+#!/bin/sh
+#Script by FordSenpai
 
-#!/bin/bash
-#
-# Original script by fornesia, rzengineer and fawzya 
-# Mod by Wangzki
-# 
-# ==================================================
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+sleep 2
+echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+#Requirement
+apt update
+apt upgrade -y
+apt install openvpn nginx php7.3-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
 
-MYIP=$(wget -qO- ipv4.icanhazip.com);
-
-# initialisasi var
-export DEBIAN_FRONTEND=noninteractive
-OS=`uname -m`;
+# initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
-
-#detail nama perusahaan
-country=ID
-state=Manila
-locality=Manila
-organization=WANG
-organizationalunit=IT
-commonname=wang@wang.com
-email=wang@wang.com
-
-# go to root
-cd
+cd /root
+wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
+wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip"
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
-sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
 
-# install wget and curl
-apt-get update;apt-get -y install wget curl;
 
-# set time GMT +7
-ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
+# set time GMT +8
+ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 
-# set locale
-sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
-service ssh restart
-
-# set repo
-cat > /etc/apt/sources.list <<END2
-deb http://security.debian.org/ jessie/updates main contrib non-free
-deb-src http://security.debian.org/ jessie/updates main contrib non-free
-deb http://http.us.debian.org/debian jessie main contrib non-free
-deb http://packages.dotdeb.org jessie all
-deb-src http://packages.dotdeb.org jessie all
-END2
-wget "http://www.dotdeb.org/dotdeb.gpg"
-cat dotdeb.gpg | apt-key add -;rm dotdeb.gpg
-
-sh -c 'echo "deb http://download.webmin.com/download/repository sarge contrib" > /etc/apt/sources.list.d/webmin.list'
-wget -qO - http://www.webmin.com/jcameron-key.asc | apt-key add -
-
-# update
-apt-get update; apt-get -y upgrade;
-
-# install webserver
-apt-get -y install nginx
-
-# install essential package
-apt-get -y install nano iptables dnsutils openvpn screen whois ngrep unzip unrar
-
-echo 'echo -e "welcome to the server $HOSTNAME" | lolcat' >> .bashrc
-echo 'echo -e "Script mod by Wangzki"' >> .bashrc
-echo 'echo -e "Type menu to display a list of commands"' >> .bashrc
-echo 'echo -e ""' >> .bashrc
-
-# install webserver
+# install webmin
 cd
-rm /etc/nginx/sites-enabled/default
-rm /etc/nginx/sites-available/default
-wget -O /etc/nginx/nginx.conf "https://raw.githubusercontent.com/wangzki03/VPSauto/master/nginx.conf"
-mkdir -p /home/vps/public_html
-echo "<pre>Setup by Wangzki</pre>" > /home/vps/public_html/index.html
-wget -O /etc/nginx/conf.d/vps.conf "https://raw.githubusercontent.com/wangzki03/VPSauto/master/vps.conf"
-service nginx restart
+wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
+dpkg --install webmin_1.930_all.deb;
+apt-get -y -f install;
+sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
+rm /root/webmin_1.930_all.deb
+/etc/init.d/webmin restart
 
-# install openvpn
-wget -O /etc/openvpn/openvpn.tar "https://raw.githubusercontent.com/wangzki03/VPSauto/master/openvpn-debian.tar"
-cd /etc/openvpn/
-tar xf openvpn.tar
-wget -O /etc/openvpn/1194.conf "https://raw.githubusercontent.com/wangzki03/VPSauto/master/1194.conf"
-service openvpn restart
-sysctl -w net.ipv4.ip_forward=1
-sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
-iptables -t nat -I POSTROUTING -s 192.168.100.0/24 -o eth0 -j MASQUERADE
-iptables-save > /etc/iptables_yg_baru_dibikin.conf
-wget -O /etc/network/if-up.d/iptables "https://raw.githubusercontent.com/wangzki03/VPSauto/master/iptables"
-chmod +x /etc/network/if-up.d/iptables
-service openvpn restart
+# install screenfetch
+cd
+rm -rf /root/.bashrc
+wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
 
-# konfigurasi openvpn
-cd /etc/openvpn/
-wget -O /etc/openvpn/client.ovpn "https://raw.githubusercontent.com/wangzki03/VPSauto/master/client-1194.conf"
-sed -i $MYIP2 /etc/openvpn/client.ovpn;
-cp client.ovpn /home/vps/public_html/
+#text gambar
+apt install boxes
+# text pelangi
+sudo apt-get install ruby -y
+sudo gem install lolcat
+
+# install dropbear
+sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
+sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
+echo "/bin/false" >> /etc/shells
+
+# install privoxy
+cat > /etc/privoxy/config <<-END
+user-manual /usr/share/doc/privoxy/user-manual
+confdir /etc/privoxy
+logdir /var/log/privoxy
+filterfile default.filter
+logfile logfile
+listen-address  0.0.0.0:3128
+listen-address  0.0.0.0:8000
+toggle  1
+enable-remote-toggle  0
+enable-remote-http-toggle  0
+enable-edit-actions 0
+enforce-blocks 0
+buffer-limit 4096
+enable-proxy-authentication-forwarding 1
+forwarded-connect-retries  1
+accept-intercepted-requests 1
+allow-cgi-request-crunching 1
+split-large-forms 0
+keep-alive-timeout 5
+tolerate-pipelining 1
+socket-timeout 300
+permit-access 0.0.0.0/0 xxxxxxxxx
+END
+sed -i $MYIP2 /etc/privoxy/config;
+
+# install squid3
+cat > /etc/squid/squid.conf <<-END
+acl localhost src 127.0.0.1/32 ::1
+acl to_localhost dst 127.0.0.0/8 0.0.0.0/32 ::1
+acl SSL_ports port 443
+acl Safe_ports port 80
+acl Safe_ports port 21
+acl Safe_ports port 442
+acl Safe_ports port 443
+acl Safe_ports port 444
+acl Safe_ports port 70
+acl Safe_ports port 210
+acl Safe_ports port 1025-65535
+acl Safe_ports port 280
+acl Safe_ports port 488
+acl Safe_ports port 591
+acl Safe_ports port 777
+acl CONNECT method CONNECT
+acl SSH dst xxxxxxxxx-xxxxxxxxx/32
+http_access allow SSH
+http_access allow manager localhost
+http_access deny manager
+http_access allow localhost
+http_access deny all
+http_port 8080
+http_port 8000
+http_port 80
+http_port 3128
+coredump_dir /var/spool/squid3
+refresh_pattern ^ftp: 1440 20% 10080
+refresh_pattern ^gopher: 1440 0% 1440
+refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
+refresh_pattern . 0 20% 4320
+visible_hostname FordSenpai
+END
+sed -i $MYIP2 /etc/squid/squid.conf;
+/etc/init.d/squid.restart
+
+# setting banner
+rm /etc/issue.net
+wget -O /etc/issue.net "https://raw.githubusercontent.com/emue25/cream/mei/bannerssh"
+sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
+sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
+/etc/init.d/ssh restart
+/etc/init.d/dropbear restart
 
 # install badvpn
-cd
-wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/wangzki03/VPSauto/master/badvpn-udpgw"
+wget -O /usr/bin/badvpn-udpgw "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw"
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/wangzki03/VPSauto/master/badvpn-udpgw64"
+  wget -O /usr/bin/badvpn-udpgw "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw64"
 fi
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
-# setting port ssh
+#install OpenVPN
+cp -r /usr/share/easy-rsa/ /etc/openvpn
+mkdir /etc/openvpn/easy-rsa/keys
+
+# replace bits
+sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="PH"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Tarlac"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Concepcion"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="JohnFordTV"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_EMAIL="me@myhost.mydomain"|export KEY_EMAIL="exodia090@gmail.com"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_OU="MyOrganizationalUnit"|export KEY_OU="FordSenpai"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_NAME="EasyRSA"|export KEY_NAME="FordSenpai"|' /etc/openvpn/easy-rsa/vars
+sed -i 's|export KEY_OU=changeme|export KEY_OU=FordSenpai|' /etc/openvpn/easy-rsa/vars
+#Create Diffie-Helman Pem
+openssl dhparam -out /etc/openvpn/dh1024.pem 1024
+# Create PKI
+cd /etc/openvpn/easy-rsa
+cp openssl-1.0.0.cnf openssl.cnf
+. ./vars
+./clean-all
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" --initca $*
+# create key server
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" --server server
+# setting KEY CN
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" client
 cd
-sed -i 's/Port 22/Port 22/g' /etc/ssh/sshd_config
-sed -i '/Port 22/a Port 444' /etc/ssh/sshd_config
-service ssh restart
+#cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key} /etc/openvpn
+cp /etc/openvpn/easy-rsa/keys/server.crt /etc/openvpn/server.crt
+cp /etc/openvpn/easy-rsa/keys/server.key /etc/openvpn/server.key
+cp /etc/openvpn/easy-rsa/keys/ca.crt /etc/openvpn/ca.crt
+chmod +x /etc/openvpn/ca.crt
 
-# install dropbear
-apt-get -y install dropbear
-sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
-sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=143/g' /etc/default/dropbear
-sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 109"/g' /etc/default/dropbear
-echo "/bin/false" >> /etc/shells
-echo "/usr/sbin/nologin" >> /etc/shells
-service ssh restart
-service dropbear restart
+# Setting Server
+tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
+chmod +x /usr/lib/openvpn/*
+cat > /etc/openvpn/server.conf <<-END
+port 55
+proto tcp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh1024.pem
+verify-client-cert none
+username-as-common-name
+plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
+server 192.168.10.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8"
+push "dhcp-option DNS 8.8.4.4"
+push "route-method exe"
+push "route-delay 2"
+socket-flags TCP_NODELAY
+push "socket-flags TCP_NODELAY"
+keepalive 10 120
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+log openvpn.log
+verb 3
+ncp-disable
+cipher none
+auth none
+END
+systemctl start openvpn@server
 
-# install squid3
-cd
-apt-get -y install squid3
-wget -O /etc/squid3/squid.conf "https://raw.githubusercontent.com/wangzki03/VPSauto/master/squid3.conf"
-sed -i $MYIP2 /etc/squid3/squid.conf;
-service squid3 restart
+#Create OpenVPN Config
+mkdir -p /home/vps/public_html
+cat > /home/vps/public_html/client.ovpn <<-END
+# Created by kopet
+auth-user-pass
+client
+dev tun
+proto tcp
+remote $MYIP 55
+http-proxy $MYIP 80
+persist-key
+persist-tun
+pull
+resolv-retry infinite
+nobind
+user nobody
+comp-lzo
+remote-cert-tls server
+verb 3
+mute 2
+connect-retry 5 5
+connect-retry-max 8080
+mute-replay-warnings
+redirect-gateway def1
+script-security 2
+cipher none
+auth none
+END
+echo '<ca>' >> /home/vps/public_html/client.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
+echo '</ca>' >> /home/vps/public_html/client.ovpn
 
-# install webmin
-cd
-apt-get -y install webmin
-sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-service webmin restart
-
-# install stunnel
-apt-get install stunnel4 -y
+# Configure Stunnel
+sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
-cert = /etc/stunnel/stunnel.pem
-client = no
-socket = a:SO_REUSEADDR=1
+sslVersion = all
+pid = /stunnel.pid
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
-
-
+client = no
+[openvpn]
+accept = 444
+connect = 127.0.0.1:55
+cert = /etc/stunnel/stunnel.pem
 [dropbear]
 accept = 443
-connect = 127.0.0.1:143 
-
+connect = 127.0.0.1:442
+cert = /etc/stunnel/stunnel.pem
 END
 
-#membuat sertifikat
-openssl genrsa -out key.pem 2048
-openssl req -new -x509 -key key.pem -out cert.pem -days 1095 \
--subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
-cat key.pem cert.pem >> /etc/stunnel/stunnel.pem
+#Setting UFW
+ufw allow ssh
+ufw allow 55/tcp
+sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
+sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
-#konfigurasi stunnel
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-/etc/init.d/stunnel4 restart
+# set ipv4 forward
+echo 1 > /proc/sys/net/ipv4/ip_forward
+sed -i 's|#net.ipv4.ip_forward=1|net.ipv4.ip_forward=1|' /etc/sysctl.conf
 
-# teks berwarna
-apt-get -y install ruby
-gem install lolcat
+#Setting IPtables
+cat > /etc/iptables.up.rules <<-END
+*nat
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -j SNAT --to-source xxxxxxxxx
+-A POSTROUTING -o eth0 -j MASQUERADE
+-A POSTROUTING -s 192.168.10.0/24 -o eth0 -j MASQUERADE
+COMMIT
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:fail2ban-ssh - [0:0]
+-A INPUT -p tcp -m multiport --dports 22 -j fail2ban-ssh
+-A INPUT -p ICMP --icmp-type 8 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 53 -j ACCEPT
+-A INPUT -p tcp --dport 22  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 80  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 143  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 442  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 443  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 444  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 587  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 1194  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 1194  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 55  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 55  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 8085  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 8085  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 8888  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 8888  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 3128  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 3128  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 8080  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT 
+-A INPUT -p tcp --dport 7300  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
+-A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 587 -j ACCEPT
+-A fail2ban-ssh -j RETURN
+COMMIT
+*raw
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+COMMIT
+*mangle
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+COMMIT
+END
+sed -i $MYIP2 /etc/iptables.up.rules;
+iptables-restore < /etc/iptables.up.rules
 
-# install fail2banapt-get -y install fail2ban;
-service fail2ban restart 
-
-# install ddos deflate
+# Configure Nginx
 cd
-apt-get -y install dnsutils dsniff
-wget https://raw.githubusercontent.com/wangzki03/VPSauto/master/ddos-deflate-master.zip 
-unzip ddos-deflate-master.zip
-cd ddos-deflate-master
-./install.sh
-rm -rf /root/ddos-deflate-master.zip 
+rm /etc/nginx/sites-enabled/default
+rm /etc/nginx/sites-available/default
+cat > /etc/nginx/nginx.conf <<END3
+user www-data;
+worker_processes 1;
+pid /var/run/nginx.pid;
+events {
+	multi_accept on;
+  worker_connections 1024;
+}
+http {
+	gzip on;
+	gzip_vary on;
+	gzip_comp_level 5;
+	gzip_types    text/plain application/x-javascript text/xml text/css;
+	autoindex on;
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  keepalive_timeout 65;
+  types_hash_max_size 2048;
+  server_tokens off;
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  access_log /var/log/nginx/access.log;
+  error_log /var/log/nginx/error.log;
+  client_max_body_size 32M;
+	client_header_buffer_size 8m;
+	large_client_header_buffers 8 8m;
+	fastcgi_buffer_size 8m;
+	fastcgi_buffers 8 8m;
+	fastcgi_read_timeout 600;
+  include /etc/nginx/conf.d/*.conf;
+}
+END3
+mkdir -p /home/vps/public_html
+wget -O /home/vps/public_html/index.html "https://sshfast.net/"
+echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
+args='$args'
+uri='$uri'
+document_root='$document_root'
+fastcgi_script_name='$fastcgi_script_name'
+cat > /etc/nginx/conf.d/vps.conf <<END4
+server {
+  listen       85;
+  server_name  127.0.0.1 localhost;
+  access_log /var/log/nginx/vps-access.log;
+  error_log /var/log/nginx/vps-error.log error;
+  root   /home/vps/public_html;
+  location / {
+    index  index.html index.htm index.php;
+    try_files $uri $uri/ /index.php?$args;
+  }
+  location ~ \.php$ {
+    include /etc/nginx/fastcgi_params;
+    fastcgi_pass  127.0.0.1:9000;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+  }
+}
+END4
+sed -i 's/listen = \/var\/run\/php7.3-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.3/fpm/pool.d/www.conf
+/etc/init.d/nginx restart
 
-# bannerrm /etc/issue.net
-wget -O /etc/issue.net "https://raw.githubusercontent.com/wangzki03/VPSauto/master/issue.net"
-sed -i 's@#Banner@Banner@g' /etc/ssh/sshd_config
-sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dropbear
-service ssh restart
-service dropbear restart
+#Create Admin
+useradd admin
+echo "admin:kopet" | chpasswd
 
-# download script
-cd /usr/bin
-wget -O menu "https://raw.githubusercontent.com/wangzki03/VPSauto/master/menu.sh"
-wget -O usernew "https://raw.githubusercontent.com/wangzki03/VPSauto/master/usernew.sh"
-wget -O banner "https://raw.githubusercontent.com/wangzki03/VPSauto/master/servermsg.sh"
-wget -O delete "https://raw.githubusercontent.com/wangzki03/VPSauto/master/hapus.sh"
-wget -O check "https://raw.githubusercontent.com/wangzki03/VPSauto/master/user-login.sh"
-wget -O member "https://raw.githubusercontent.com/wangzki03/VPSauto/master/user-list.sh"
-wget -O restart "https://raw.githubusercontent.com/wangzki03/VPSauto/master/resvis.sh"
-wget -O speedtest "https://raw.githubusercontent.com/wangzki03/VPSauto/master/speedtest_cli.py"
-wget -O info "https://raw.githubusercontent.com/wangzki03/VPSauto/master/info.sh"
-wget -O about "https://raw.githubusercontent.com/wangzki03/VPSauto/master/about.sh"
 
-echo "0 0 * * * root /sbin/reboot" > /etc/cron.d/reboot
+# Create and Configure rc.local
+cat > /etc/rc.local <<-END
+#!/bin/sh -e
+exit 0
+END
+chmod +x /etc/rc.local
+sed -i '$ i\echo "nameserver 8.8.8.8" > /etc/resolv.conf' /etc/rc.local
+sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
+sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
-chmod +x menu
-chmod +x usernew
-chmod +x banner
-chmod +x delete
-chmod +x check
-chmod +x member
-chmod +x restart
-chmod +x speedtest
-chmod +x info
-chmod +x about
+# Configure menu
+#wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
+apt-get install unzip
+cd /usr/local/bin/
+wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
+unzip bashmenu.zip
+chmod +x /usr/local/bin/*
 
-# finishing
-cd
+# cronjob
+echo "02 */12 * * * root service dropbear restart" > /etc/cron.d/dropbear
+echo "00 23 * * * root /usr/bin/disable-user-expire" > /etc/cron.d/disable-user-expire
+echo "0 */12 * * * root /sbin/reboot" > /etc/cron.d/reboot
+echo "00 01 * * * root echo 3 > /proc/sys/vm/drop_caches && swapoff -a && swapon -a" > /etc/cron.d/clearcacheram3swap
+echo "*/3 * * * * root /usr/bin/clearcache.sh" > /etc/cron.d/clearcache1
+# add eth0 to vnstat
+vnstat -u -i eth0
+
+# compress configs
+cd /home/vps/public_html
+zip configs.zip client.ovpn
+
+# install libxml-parser
+apt-get install libxml-parser-perl -y -f
+
+# finalizing
+vnstat -u -i eth0
+apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
-service nginx start
-service openvpn restart
-service cron restart
-service ssh restart
-service dropbear restart
-service squid3 restart
-service webmin restart
-rm -rf ~/.bash_history && history -c
-echo "unset HISTFILE" >> /etc/profile
+/etc/init.d/nginx start
+/etc/init.d/php7.0-fpm start
+/etc/init.d/vnstat restart
+/etc/init.d/openvpn restart
+/etc/init.d/dropbear restart
+/etc/init.d/fail2ban restart
+/etc/init.d/squid restart
 
-# install neofetch
-echo "deb http://dl.bintray.com/dawidd6/neofetch jessie main" | tee -a /etc/apt/sources.list
-curl "https://bintray.com/user/downloadSubjectPublicKey?username=bintray"| apt-key add -
-apt-get update
-apt-get install neofetch
-
-echo "deb http://dl.bintray.com/dawidd6/neofetch jessie main" | tee -a /etc/apt/sources.list
-curl "https://bintray.com/user/downloadSubjectPublicKey?username=bintray"| apt-key add -
-apt-get update
-apt-get install neofetch
-
+#clearing history
+history -c
+rm -rf /root/*
+cd /root
 # info
 clear
-echo "Autoscript Include:" | tee log-install.txt
-echo "===========================================" | tee -a log-install.txt
+echo " "
+echo "Installation has been completed!!"
+echo " Please Reboot your VPS"
+echo "--------------------------- Configuration Setup Server -------------------------"
+echo "                       Debian9 Script HostingTermurah Based                      "
+echo "                                 -modifikasi by zhangzi-                                   "
+echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
-echo "Service"  | tee -a log-install.txt
-echo "-------"  | tee -a log-install.txt
-echo "OpenSSH  : 22, 444"  | tee -a log-install.txt
-echo "Dropbear : 143, 109"  | tee -a log-install.txt
-echo "SSL      : 443"  | tee -a log-install.txt
-echo "Squid3   : 8000, 3128 (limit to IP SSH)"  | tee -a log-install.txt
-echo "OpenVPN  : TCP 1194 (client config : http://$MYIP:81/client.ovpn)"  | tee -a log-install.txt
-echo "badvpn   : badvpn-udpgw port 7300"  | tee -a log-install.txt
-echo "nginx    : 81"  | tee -a log-install.txt
+echo "Server Information"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malingsial asu (GMT +8)"  | tee -a log-install.txt
+echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
+echo "   - IPtables    : [ON]"  | tee -a log-install.txt
+echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
+echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "Script"  | tee -a log-install.txt
-echo "------"  | tee -a log-install.txt
-echo "menu (Displays a list of available commands)"  | tee -a log-install.txt
-echo "usernew (Creating an SSH Account)"  | tee -a log-install.txt
-echo "trial (Create a Trial Account)"  | tee -a log-install.txt
-echo "delete (Clearing SSH Account)"  | tee -a log-install.txt
-echo "check (Check User Login)"  | tee -a log-install.txt
-echo "member (Check Member SSH)"  | tee -a log-install.txt
-echo "restart (Restart Service dropbear, webmin, squid3, openvpn and ssh)"  | tee -a log-install.txt
-echo "reboot (Reboot VPS)"  | tee -a log-install.txt
-echo "speedtest (Speedtest VPS)"  | tee -a log-install.txt
-echo "info (System Information)"  | tee -a log-install.txt
-echo "about (Information about auto install script)"  | tee -a log-install.txt
+echo "Application & Port Information"  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 55 "  | tee -a log-install.txt
+echo "   - OpenVPN-SSL   	: 444 "  | tee -a log-install.txt
+echo "   - Dropbear		: 442"  | tee -a log-install.txt
+echo "   - Stunnel		: 443"  | tee -a log-install.txt
+echo "   - BadVPN  	: 7300"  | tee -a log-install.txt
+echo "   - Squid Proxy	: 8080, 8000, 3128, 80 (limit to IP Server)"  | tee -a log-install.txt
+echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "Other features"  | tee -a log-install.txt
-echo "----------"  | tee -a log-install.txt
-echo "Webmin   : http://$MYIP:10000/"  | tee -a log-install.txt
-echo "Timezone : Asia/Manila (GMT +7)"  | tee -a log-install.txt
-echo "IPv6     : [off]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "Original Script by Fornesia, Rzengineer & Fawzya"  | tee -a log-install.txt
-echo "Modified by Wangzki"  | tee -a log-install.txt
+echo "Premium Script Information"  | tee -a log-install.txt
+echo "   To display list of commands: menu"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "Installation Log --> /root/log-install.txt"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "VPS AUTO REBOOT TIME HOURS 12 NIGHT"  | tee -a log-install.txt
+echo "Important Information"  | tee -a log-install.txt
+echo "   - Download Config OpenVPN : http://$MYIP/configs.zip"  | tee -a log-install.txt
+echo "   - Installation Log        : cat /root/log-install.txt"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "==========================================="  | tee -a log-install.txt
-cd
-rm -f /root/debian7.sh
-Password: IBY484
-As Combo: aranaorlando@yahoo.es:IBY484
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arcilatobar@une.net.co
-Password: bealilo5
-As Combo: arcilatobar@une.net.co:bealilo5
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arekusut@hotmail.com
-Password: pilunchis79
-As Combo: arekusut@hotmail.com:pilunchis79
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arleyaslan30@gmail.com
-Password: claudia150
-As Combo: arleyaslan30@gmail.com:claudia150
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: armalo7992@gmail.com
-Password: 20003000
-As Combo: armalo7992@gmail.com:20003000
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arman1007@hotmail.com
-Password: arman1007
-As Combo: arman1007@hotmail.com:arman1007
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arnoldomen@gmail.com
-Password: mishijos02
-As Combo: arnoldomen@gmail.com:mishijos02
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arodrigu59@hotmail.com
-Password: 94utyhrn
-As Combo: arodrigu59@hotmail.com:94utyhrn
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: arturo.olvera.vega@gmail.com
-Password: aov660724
-As Combo: arturo.olvera.vega@gmail.com:aov660724
-Subscription: Premium
-Recurring date: 7/25/18
-Status: 
-Country: MX
-===================
-Username: asdrubal_sosa@hotmail.com
-Password: 23021974
-As Combo: asdrubal_sosa@hotmail.com:23021974
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: Atj967@gmail.com
-Password: pegote
-As Combo: Atj967@gmail.com:pegote
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: avilacar84@gmail.com
-Password: santiago1a
-As Combo: avilacar84@gmail.com:santiago1a
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: a-villli@hotmail.com
-Password: bebu0102
-As Combo: a-villli@hotmail.com:bebu0102
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: Ayde555@hotmail.com
-Password: pasonuevo
-As Combo: Ayde555@hotmail.com:pasonuevo
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: barreroleonardo2@gmail.com
-Password: 12601260
-As Combo: barreroleonardo2@gmail.com:12601260
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: basamaro-2010@hotmail.com
-Password: lenovoUltrabook1
-As Combo: basamaro-2010@hotmail.com:lenovoUltrabook1
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: batistapuello@hotmail.com
-Password: 1128045145
-As Combo: batistapuello@hotmail.com:1128045145
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bautistaluisjoseorlando@gmail.com
-Password: dianasofia2002
-As Combo: bautistaluisjoseorlando@gmail.com:dianasofia2002
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bcb1993@hotmail.com
-Password: mariapaula10
-As Combo: bcb1993@hotmail.com:mariapaula10
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bernardoferro19@gmail.com
-Password: rommelww2
-As Combo: bernardoferro19@gmail.com:rommelww2
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bettasdragon@gmail.com
-Password: bettasdragon
-As Combo: bettasdragon@gmail.com:bettasdragon
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bettinabaron@yahoo.es
-Password: rugerfer
-As Combo: bettinabaron@yahoo.es:rugerfer
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bosita.obm@icloud.com
-Password: Bosita.01
-As Combo: bosita.obm@icloud.com:Bosita.01
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: bra1918@outlook.com
-Password: tvagro98
-As Combo: bra1918@outlook.com:tvagro98
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: buitragoa@hotmail.com
-Password: anbulo59
-As Combo: buitragoa@hotmail.com:anbulo59
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: buitragocar@gmail.com
-Password: 0414cabsa
-As Combo: buitragocar@gmail.com:0414cabsa
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: c_valencia_b@hotmail.com
-Password: anjelika
-As Combo: c_valencia_b@hotmail.com:anjelika
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: cabetomolina.m@gmail.com
-Password: mijuanes
-As Combo: cabetomolina.m@gmail.com:mijuanes
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: caleo369@hotmail.com
-Password: soyfeliz69
-As Combo: caleo369@hotmail.com:soyfeliz69
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: camcastrov@hotmail.com
-Password: tinhorse71
-As Combo: camcastrov@hotmail.com:tinhorse71
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: camiloart-14@hotmail.com
-Password: 3214585788
-As Combo: camiloart-14@hotmail.com:3214585788
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: camilojuan19@gmail.com
-Password: 8edevalc
-As Combo: camilojuan19@gmail.com:8edevalc
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: candi1727@hotmail.com
-Password: comando12345
-As Combo: candi1727@hotmail.com:comando12345
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: Canoca19@hotmail.com
-Password: jocelial1906
-As Combo: Canoca19@hotmail.com:jocelial1906
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: capc1@hotmail.com
-Password: 12mamola
-As Combo: capc1@hotmail.com:12mamola
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: CO
-===================
-Username: carloscolin@mac.com
-Password: camila11
-As Combo: carloscolin@mac.com:camila11
-Subscription: Premium
-Recurring date: 7/5/18
-Status: 
-Country: MX
-===================
-Username: carlosrandy@hotmail.com
-Password: a123456
-As Combo: carlosrandy@hotmail.com:a123456
-Subscription: <html>
-Recurring date: 
-Status: 
-Country: 
-===================
-Username: ccocky5@gmail.com
-Password: 12038447
-As Combo: ccocky5@gmail.com:12038447
-Subscription: Premium
-Recurring date: 7/22/18
-Status: Premium for Students
-Country: MX
-===================
-Username: chalobarragan@gmail.com
-Password: 14081984
-As Combo: chalobarragan@gmail.com:14081984
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: MX
-===================
-Username: charly.lemus@hotmail.com
-Password: 280109
-As Combo: charly.lemus@hotmail.com:280109
-Subscription: Premium
-Recurring date: 7/5/18
-Status: Premium for Students
-Country: MX
-===================
-Username: chendez_@hotmail.com
-Password: CARC1978
-As Combo: chendez_@hotmail.com:CARC1978
-Subscription: Premium
-Recurring date: 7/4/18
-Status: 
-Country: MX
-===================
-Username: corderovaleria.5@gmail.com
-Password: 411047948
-As Combo: corderovaleria.5@gmail.com:411047948
-Subscription: Premium
-Recurring date: 7/20/18
-Status: Premium for Students
-Country: MX
-===================
-Username: danielserrano@msn.com
-Password: alincodr450path
-As Combo: danielserrano@msn.com:alincodr450path
-Subscription: Premium
-Recurring date: 7/3/18
-Status: 
-Country: AR
-===================
-Username: donfabian1218@gmail.com
-Password: Adonai1218
-As Combo: donfabian1218@gmail.com:Adonai1218
-Subscription: <html>
-Recurring date: 
-Status: 
-Country: 
-===================
-Username: duartesaraid@outlook.com
-Password: casacasa
-As Combo: duartesaraid@outlook.com:casacasa
-Subscription: <html>
-Recurring date: 
-Status: 
-Country: 
-===================
-Username: eduard626@gmail.com
-Password: lalolalo
-As Combo: eduard626@gmail.com:lalolalo
-Subscription: Premium
-Recurring date: 7/11/18
-Status: Premium for Students
-Country: GB
-===================
-Username: elsebapili@hotmail.com
-Password: Papanoel
-As Combo: elsebapili@hotmail.com:Papanoel
-Subscription: 
-Recurring date: 
-Status: 
-Country: 
-===================
-Username: emilianor81@gmail.com
-Password: te1sorin0
-As Combo: emilianor81@gmail.com:te1sorin0
-Subscription: Premium
-Recurring date: 7/16/18
-Status: 
-Country: AR
-===================
-Username: ferhervias@gmail.com
-Password: sexylady
-As Combo: ferhervias@gmail.com:sexylady
-Subscription: Premium
-Recurring date: 7/6/18
-Status: Premium for Students
-Country: MX
-===================
-Username: fitzeroa@gmail.com
-Password: Katya2001
-As Combo: fitzeroa@gmail.com:Katya2001
-Subscription: Premium
-Recurring date: 7/10/18
-Status: 
-Country: MX
-===================
-Username: franco11690@gmail.com
-Password: pecesito
-As Combo: franco11690@gmail.com:pecesito
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: AR
-===================
-Username: gabychy4@gmail.com
-Password: Monopoly04
-As Combo: gabychy4@gmail.com:Monopoly04
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: MX
-===================
-Username: gabymendez_99@hotmail.com
-Password: girasoles629
-As Combo: gabymendez_99@hotmail.com:girasoles629
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: MX
-===================
-Username: garibayy1990@gmail.com
-Password: Neto2090
-As Combo: garibayy1990@gmail.com:Neto2090
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: MX
-===================
-Username: gerardo_carranco@hotmail.com
-Password: Panuco28
-As Combo: gerardo_carranco@hotmail.com:Panuco28
-Subscription: Premium
-Recurring date: 7/2/18
-Status: Premium for Students
-Country: MX
-===================
-Username: gisela07_trejo@hotmail.com
-Password: ktimporta13
-As Combo: gisela07_trejo@hotmail.com:ktimporta13
-Subscription: Premium
-Recurring date: 7/18/18
-Status: Premium for Students
-Country: MX
-===================
-Username: hvallejoa@hotmail.com
-Password: ventas07
-As Combo: hvallejoa@hotmail.com:ventas07
-Subscription: Premium
-Recurring date: 
-Status: 
-Country: MX
-===================
-Username: info@caminodeljaguel.com.ar
-Password: sierjo08
-As Combo: info@caminodeljaguel.com.ar:sierjo08
-Subscription: <html>
-Recurring date: 
-Status: 
-Country:
+echo "   - Webmin                  : http://$MYIP:10000/"  | tee -a log-install.txt
+echo ""
+echo "------------------------------ Script by ZhangZi -----------------------------"
+echo "-----Please Reboot your VPS -----"
+sleep 5

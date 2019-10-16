@@ -322,7 +322,7 @@ vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/nginx start
-/etc/init.d/php7.0-fpm start
+/etc/init.d/php7.3-fpm start
 /etc/init.d/vnstat restart
 #/etc/init.d/openvpn restart
 /etc/init.d/dropbear restart

@@ -130,110 +130,8 @@ sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
-#install OpenVPN
-cp -r /usr/share/easy-rsa/ /etc/openvpn
-mkdir /etc/openvpn/easy-rsa/keys
 
-# replace bits
-sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="PH"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Tarlac"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Concepcion"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="JohnFordTV"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_EMAIL="me@myhost.mydomain"|export KEY_EMAIL="exodia090@gmail.com"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_OU="MyOrganizationalUnit"|export KEY_OU="FordSenpai"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_NAME="EasyRSA"|export KEY_NAME="FordSenpai"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_OU=changeme|export KEY_OU=FordSenpai|' /etc/openvpn/easy-rsa/vars
-#Create Diffie-Helman Pem
-openssl dhparam -out /etc/openvpn/dh1024.pem 1024
-# Create PKI
-cd /etc/openvpn/easy-rsa
-cp openssl-1.0.0.cnf openssl.cnf
-. ./vars
-./clean-all
-export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" --initca $*
-# create key server
-export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" --server server
-# setting KEY CN
-export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" client
-cd
-#cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key} /etc/openvpn
-cp /etc/openvpn/easy-rsa/keys/server.crt /etc/openvpn/server.crt
-cp /etc/openvpn/easy-rsa/keys/server.key /etc/openvpn/server.key
-cp /etc/openvpn/easy-rsa/keys/ca.crt /etc/openvpn/ca.crt
-chmod +x /etc/openvpn/ca.crt
 
-# Setting Server
-tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
-chmod +x /usr/lib/openvpn/*
-cat > /etc/openvpn/server.conf <<-END
-port 55
-proto tcp
-dev tun
-ca ca.crt
-cert server.crt
-key server.key
-dh dh1024.pem
-verify-client-cert none
-username-as-common-name
-plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
-server 192.168.10.0 255.255.255.0
-ifconfig-pool-persist ipp.txt
-push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
-push "route-method exe"
-push "route-delay 2"
-socket-flags TCP_NODELAY
-push "socket-flags TCP_NODELAY"
-keepalive 10 120
-comp-lzo
-user nobody
-group nogroup
-persist-key
-persist-tun
-status openvpn-status.log
-log openvpn.log
-verb 3
-ncp-disable
-cipher none
-auth none
-END
-systemctl start openvpn@server
-
-#Create OpenVPN Config
-mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/client.ovpn <<-END
-# Created by kopet
-auth-user-pass
-client
-dev tun
-proto tcp
-remote $MYIP 55
-http-proxy $MYIP 80
-persist-key
-persist-tun
-pull
-resolv-retry infinite
-nobind
-user nobody
-comp-lzo
-remote-cert-tls server
-verb 3
-mute 2
-connect-retry 5 5
-connect-retry-max 8080
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-END
-echo '<ca>' >> /home/vps/public_html/client.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
-echo '</ca>' >> /home/vps/public_html/client.ovpn
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
@@ -244,21 +142,13 @@ pid = /stunnel.pid
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
-[openvpn]
-accept = 444
-connect = 127.0.0.1:55
-cert = /etc/stunnel/stunnel.pem
 [dropbear]
 accept = 443
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 END
 
-#Setting UFW
-ufw allow ssh
-ufw allow 55/tcp
-sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
-sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
+
 
 # set ipv4 forward
 echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -434,7 +324,7 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/nginx start
 /etc/init.d/php7.0-fpm start
 /etc/init.d/vnstat restart
-/etc/init.d/openvpn restart
+#/etc/init.d/openvpn restart
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart

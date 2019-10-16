@@ -434,7 +434,7 @@ zip configs.zip client.ovpn
 apt-get install libxml-parser-perl -y -f
 
 # finalizing
-vnstat -u -i eth0
+#vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/nginx start

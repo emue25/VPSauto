@@ -47,7 +47,13 @@ sudo gem install lolcat
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
-
+#upgrade
+apt-get install zlib1g-dev
+wget https://raw.githubusercontent.com/emue25/VPSauto/master/dropbear-2019.78.tar.bz2
+bzip2 -cd dropbear-2019.78.tar.bz2 | tar xvf -
+cd dropbear-2019.78
+./configure
+make && make install
 # install privoxy
 cat > /etc/privoxy/config <<-END
 user-manual /usr/share/doc/privoxy/user-manual
@@ -404,12 +410,12 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-#wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
-apt-get install unzip
-cd /usr/local/bin/
-wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
-unzip bashmenu.zip
-chmod +x /usr/local/bin/*
+wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
+#apt-get install unzip
+#cd /usr/local/bin/
+#wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
+#unzip bashmenu.zip
+#chmod +x /usr/local/bin/*
 
 # cronjob
 echo "02 */12 * * * root service dropbear restart" > /etc/cron.d/dropbear

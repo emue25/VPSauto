@@ -241,9 +241,49 @@ echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
 echo '</ca>' >> /home/vps/public_html/client.ovpn
 
+#Create OpenVPN Config
+mkdir -p /home/vps/public_html
+cat > /home/vps/public_html/clientssl.ovpn <<-END
+# OpenVPN Configuration by sshfast.net
+# by zhangzi ovpn ssl
+client
+dev tun
+proto tcp
+persist-key
+persist-tun
+dev tun
+pull
+resolv-retry infinite
+nobind
+user nobody
+group nogroup
+comp-lzo
+ns-cert-type server
+verb 3
+mute 2
+mute-replay-warnings
+auth-user-pass
+redirect-gateway def1
+script-security 2
+route-method exe
+setenv opt block-outside-dns
+route-delay 2
+remote $MYIP 443
+cipher AES-128-CBC
+up /etc/openvpn/update-resolv-conf
+down /etc/openvpn/update-resolv-conf
+route $MYIP 255.255.255.255 net_gateway
+END
+echo '<ca>' >> /home/vps/public_html/clientssl.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/clientssl.ovpn
+echo '</ca>' >> /home/vps/public_html/clientssl.ovpn
+cd /home/vps/public_html/
+tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
+tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
+cd
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
 sslVersion = all
 pid = /stunnel.pid
@@ -251,15 +291,13 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 444
+accept = 443
 connect = 127.0.0.1:55
 cert = /etc/stunnel/stunnel.pem
-[dropbear]
-accept = 443
-connect = 127.0.0.1:442
-cert = /etc/stunnel/stunnel.pem
 END
-
+# Restart openvpn
+/etc/init.d/openvpn restart
+service stunnel4 restart / stunnel4 /systemctl start stunnel4
 #Setting UFW
 ufw allow ssh
 ufw allow 55/tcp

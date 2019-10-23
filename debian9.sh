@@ -282,23 +282,26 @@ tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
 tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
 cd
 # Configure Stunnel
+apt update
+apt install stunnel4
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
-sslVersion = all
-pid = /stunnel.pid
-socket = l:TCP_NODELAY=1
-socket = r:TCP_NODELAY=1
-client = no
-[openvpn]
-accept = 443
-connect = 127.0.0.1:55
-cert = /etc/stunnel/stunnel.pem
+touch stunnel.conf
+echo "client = no" | tee -a /etc/stunnel/stunnel.conf
+echo "[openvpn]" | tee -a /etc/stunnel/stunnel.conf
+echo "accept = 443" | tee -a /etc/stunnel/stunnel.conf
+echo "connect = 127.0.0.1:55" | tee -a /etc/stunnel/stunnel.conf
+echo "cert = /etc/stunnel/stunnel.pem" | tee -a /etc/stunnel/stunnel.conf
+
+sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo cp /etc/stunnel/stunnel.pem ~
 END
 # Restart openvpn
 /etc/init.d/openvpn restart
-service stunnel4 restart / stunnel4 /systemctl start stunnel4
-#Setting UFW
+/etc/init.d/stunnel4 restart
+
 ufw allow ssh
 ufw allow 55/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw

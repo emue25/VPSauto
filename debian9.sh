@@ -283,6 +283,7 @@ tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
 cd
 # Configure Stunnel
 apt update
+apt upgrade
 apt install stunnel4
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
@@ -294,9 +295,9 @@ echo "accept = 443" | tee -a /etc/stunnel/stunnel.conf
 echo "connect = 127.0.0.1:55" | tee -a /etc/stunnel/stunnel.conf
 echo "cert = /etc/stunnel/stunnel.pem" | tee -a /etc/stunnel/stunnel.conf
 
-sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+#sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-sudo cp /etc/stunnel/stunnel.pem ~
+cp /etc/stunnel/stunnel.pem ~
 END
 # Restart openvpn
 /etc/init.d/openvpn restart

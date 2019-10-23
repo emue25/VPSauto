@@ -1,5 +1,5 @@
 #!/bin/sh
-#Script by FordSenpai
+#Script by ZhangZi
 
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
@@ -250,7 +250,7 @@ socket = r:TCP_NODELAY=1
 client = no
 
 [openvpn]
-accept = 587
+accept = 53
 connect = 127.0.0.1:443
 cert = /etc/stunnel/stunnel.pem
 

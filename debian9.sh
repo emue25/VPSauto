@@ -288,13 +288,18 @@ apt install stunnel4
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
-touch stunnel.conf
-echo "client = no" | tee -a /etc/stunnel/stunnel.conf
-echo "[openvpn]" | tee -a /etc/stunnel/stunnel.conf
-echo "accept = 443" | tee -a /etc/stunnel/stunnel.conf
-echo "connect = 127.0.0.1:55" | tee -a /etc/stunnel/stunnel.conf
-echo "cert = /etc/stunnel/stunnel.pem" | tee -a /etc/stunnel/stunnel.conf
-
+cert = /etc/stunnel/stunnel.pem
+client = no
+socket = a:SO_REUSEADDR=1
+socket = l:TCP_NODELAY=1
+socket = r:TCP_NODELAY=1
+[openvpn]
+accept = 443
+connect = 127.0.0.1:55
+cert = /etc/stunnel/stunnel.pem
+sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo cp /etc/stunnel/stunnel.pem ~
 #sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 cp /etc/stunnel/stunnel.pem ~
@@ -486,7 +491,7 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart
-/etc/init.d/ stunnel4 restart
+/etc/init.d/stunnel4 restart
 
 #clearing history
 history -c

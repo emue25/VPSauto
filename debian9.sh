@@ -1,5 +1,5 @@
 #!/bin/sh
-#Script by FordSenpai
+#Script by ZhangZi
 
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2

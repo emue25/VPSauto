@@ -55,8 +55,8 @@ confdir /etc/privoxy
 logdir /var/log/privoxy
 filterfile default.filter
 logfile logfile
-listen-address  0.0.0.0:3128
-listen-address  0.0.0.0:8000
+listen-address  0.0.0.0:8888
+listen-address  0.0.0.0:8089
 toggle  1
 enable-remote-toggle  0
 enable-remote-http-toggle  0
@@ -237,28 +237,63 @@ END
 echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
 echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
-
+#udp
+cat > /etc/openvpn/server-udp.conf <<-END
+port 25000
+proto udp
+dev tun
+tun-mtu 1500
+tun-mtu-extra 32
+mssfix 1450
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+plugin /etc/openvpn/openvpn-plugin-auth-pam.so /etc/pam.d/login
+client-cert-not-required
+username-as-common-name
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1"
+push "dhcp-option DNS 1.1.1.1"
+push "dhcp-option DNS 1.0.0.1"
+push "route-method exe"
+push "route-delay 2"
+keepalive 5 30
+cipher AES-128-CBC
+comp-lzo
+persist-key
+persist-tun
+status server-vpn.log
+verb 3
+END
+echo '<ca>' >> /home/vps/public_html/zhangziudp.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangziudp.ovpn
+echo '</ca>' >> /home/vps/public_html/zhangziudp.ovpn
 # Configure Stunnel
+apt-get install stunnel4 -y
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
-
 sslVersion = all
-pid = /stunnel.pid
+pid = /var/run/stunnel4.pid
+cert = /etc/stunnel/stunnel.pem
+client = no
+socket = a:SO_REUSEADDR=1
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
-client = no
-
-[openvpn]
-accept = 53
-connect = 127.0.0.1:443
-cert = /etc/stunnel/stunnel.pem
-
+[squid]
+accept = 8000
+connect = $ip:8080
 [dropbear]
+accept = 445
+connect = $ip:442
+[openssh]
 accept = 444
-connect = 127.0.0.1:442
-cert = /etc/stunnel/stunnel.pem
-
+connect = $ip:22
+[openvpn]
+accept = 1194
+connect = $ip:443
 END
 
 #Setting UFW
@@ -312,6 +347,19 @@ COMMIT
 -A INPUT -p tcp --dport 55  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 55  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 587 -j ACCEPT
+-A OUTPUT -p tcp --dport 6881:6889 -j DROP
+-A OUTPUT -p udp --dport 1024:65534 -j DROP
+-A FORWARD -m string --string "get_peers" --algo bm -j DROP
+-A FORWARD -m string --string "announce_peer" --algo bm -j DROP
+-A FORWARD -m string --string "find_node" --algo bm -j DROP
+-A FORWARD -m string --algo bm --string "BitTorrent" -j DROP
+-A FORWARD -m string --algo bm --string "BitTorrent protocol" -j DROP
+-A FORWARD -m string --algo bm --string "peer_id=" -j DROP
+-A FORWARD -m string --algo bm --string ".torrent" -j DROP
+-A FORWARD -m string --algo bm --string "announce.php?passkey=" -j DROP
+-A FORWARD -m string --algo bm --string "torrent" -j DROP
+-A FORWARD -m string --algo bm --string "announce" -j DROP
+-A FORWARD -m string --algo bm --string "info_hash" -j DROP
 -A fail2ban-ssh -j RETURN
 COMMIT
 *raw

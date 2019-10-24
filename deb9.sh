@@ -143,7 +143,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 443
+port 55
 proto tcp
 dev tun
 ca ca.crt
@@ -187,7 +187,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 443
+remote $MYIP 55
 http-proxy $MYIP 80
 persist-key
 persist-tun
@@ -211,65 +211,26 @@ END
 echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
 echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
-#udp
-cat > /etc/openvpn/server-udp.conf <<-END
-port 25000
-proto udp
-dev tun
-tun-mtu 1500
-tun-mtu-extra 32
-mssfix 1450
-ca ca.crt
-cert server.crt
-key server.key
-dh dh2048.pem
-plugin /etc/openvpn/openvpn-plugin-auth-pam.so /etc/pam.d/login
-client-cert-not-required
-username-as-common-name
-server 10.8.0.0 255.255.255.0
-ifconfig-pool-persist ipp.txt
-push "redirect-gateway def1"
-push "dhcp-option DNS 1.1.1.1"
-push "dhcp-option DNS 1.0.0.1"
-push "route-method exe"
-push "route-delay 2"
-keepalive 5 30
-cipher AES-128-CBC
-comp-lzo
-persist-key
-persist-tun
-status server-vpn.log
-verb 3
-END
-echo '<ca>' >> /home/vps/public_html/zhangziudp.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangziudp.ovpn
-echo '</ca>' >> /home/vps/public_html/zhangziudp.ovpn
+
+
 # Configure Stunnel
-apt-get install stunnel4 -y
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
 sslVersion = all
-pid = /var/run/stunnel4.pid
-cert = /etc/stunnel/stunnel.pem
-client = no
-socket = a:SO_REUSEADDR=1
+pid = /stunnel.pid
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
-[squid]
-accept = 8000
-connect = $ip:8080
-[dropbear]
-accept = 445
-connect = $ip:442
-[openssh]
-accept = 444
-connect = $ip:22
+client = no
 [openvpn]
-accept = 1194
-connect = $ip:443
+accept = 444
+connect = 127.0.0.1:55
+cert = /etc/stunnel/stunnel.pem
+[dropbear]
+accept = 443
+connect = 127.0.0.1:442
+cert = /etc/stunnel/stunnel.pem
 END
-
 #Setting UFW
 ufw allow ssh
 ufw allow 443/tcp
@@ -414,7 +375,7 @@ server {
   }
 }
 END4
-sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7/fpm/pool.d/www.conf
+sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.0/fpm/pool.d/www.conf
 /etc/init.d/nginx restart
 
 #Create Admin
@@ -468,7 +429,7 @@ chown -R www-data:www-data /home/vps/public_html
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart
-
+/etc/init.d/stunnel4 restart
 #clearing history
 history -c
 rm -rf /root/*

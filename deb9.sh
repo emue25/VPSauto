@@ -47,7 +47,13 @@ sudo gem install lolcat
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
-
+#upgrade
+apt-get install zlib1g-dev
+wget https://raw.githubusercontent.com/brantbell/cream/mei/dropbear-2016.74.tar.bz2
+bzip2 -cd dropbear-2016.74.tar.bz2 | tar xvf -
+cd dropbear-2016.74
+./configure
+make && make install
 
 # install squid3
 cat > /etc/squid/squid.conf <<-END
@@ -143,7 +149,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 55
+port 443
 proto tcp
 dev tun
 ca ca.crt
@@ -187,7 +193,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 55
+remote $MYIP 443
 http-proxy $MYIP 80
 persist-key
 persist-tun
@@ -223,11 +229,11 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 444
-connect = 127.0.0.1:55
+accept = 445
+connect = 127.0.0.1:443
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
-accept = 443
+accept = 444
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 END

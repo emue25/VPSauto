@@ -221,7 +221,7 @@ echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
 sslVersion = all
 pid = /stunnel.pid
@@ -229,16 +229,12 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 445
+accept = 55
 connect = 127.0.0.1:443
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
 accept = 444
 connect = 127.0.0.1:442
-cert = /etc/stunnel/stunnel.pem
-[squid]
-accept = 8888
-connect = 127.0.0.1:3128
 cert = /etc/stunnel/stunnel.pem
 END
 #Setting UFW
@@ -288,9 +284,7 @@ COMMIT
 -A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT 
 -A INPUT -p tcp --dport 7300  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
--A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
--A INPUT -p tcp --dport 55  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 55  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPTT
 -A INPUT -p tcp --dport 587 -j ACCEPT
 -A OUTPUT -p tcp --dport 6881:6889 -j DROP
 -A OUTPUT -p udp --dport 1024:65534 -j DROP

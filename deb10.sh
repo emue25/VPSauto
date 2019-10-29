@@ -130,13 +130,39 @@ sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
-
-
+# Get easy-rsa
+EASYRSAURL='https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.5/EasyRSA-nix-3.0.5.tgz'
+wget -O ~/easyrsa.tgz "$EASYRSAURL" 2>/dev/null || curl -Lo ~/easyrsa.tgz "$EASYRSAURL"
+tar xzf ~/easyrsa.tgz -C ~/
+mv ~/EasyRSA-3.0.5/ /etc/openvpn/server/
+mv /etc/openvpn/server/EasyRSA-3.0.5/ /etc/openvpn/server/easy-rsa/
+chown -R root:root /etc/openvpn/server/easy-rsa/
+rm -f ~/easyrsa.tgz
+cd /etc/openvpn/server/easy-rsa/
+# Create PKI
+cd /etc/openvpn/easy-rsa
+cp openssl-1.0.0.cnf openssl.cnf
+. ./vars
+./clean-all
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" --initca $*
+# create key server
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" --server server
+# setting KEY CN
+export EASY_RSA="${EASY_RSA:-.}"
+"$EASY_RSA/pkitool" client
+cd
+#cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key} /etc/openvpn
+cp /etc/openvpn/easy-rsa/keys/server.crt /etc/openvpn/server.crt
+cp /etc/openvpn/easy-rsa/keys/server.key /etc/openvpn/server.key
+cp /etc/openvpn/easy-rsa/keys/ca.crt /etc/openvpn/ca.crt
+chmod +x /etc/openvpn/ca.crt
 # Setting Server
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 1194
+port 443
 proto tcp
 dev tun
 ca ca.crt
@@ -172,13 +198,13 @@ systemctl start openvpn@server
 
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/client.ovpn <<-END
+cat > /home/vps/public_html/zhangzi.ovpn <<-END
 # Created by kopet
 auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 1194
+remote $MYIP 443
 http-proxy $MYIP 80
 persist-key
 persist-tun
@@ -198,12 +224,12 @@ script-security 2
 cipher none
 auth none
 END
-echo '<ca>' >> /home/vps/public_html/client.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
-echo '</ca>' >> /home/vps/public_html/client.ovpn
+echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
+echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
 #Setting UFW
 ufw allow ssh
-ufw allow 1194/tcp
+ufw allow 443/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -221,7 +247,7 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [dropbear]
-accept = 443
+accept = 444
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 END
@@ -273,6 +299,19 @@ COMMIT
 -A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
 -A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 587 -j ACCEPT
+-A OUTPUT -p tcp --dport 6881:6889 -j DROP
+-A OUTPUT -p udp --dport 1024:65534 -j DROP
+-A FORWARD -m string --string "get_peers" --algo bm -j DROP
+-A FORWARD -m string --string "announce_peer" --algo bm -j DROP
+-A FORWARD -m string --string "find_node" --algo bm -j DROP
+-A FORWARD -m string --algo bm --string "BitTorrent" -j DROP
+-A FORWARD -m string --algo bm --string "BitTorrent protocol" -j DROP
+-A FORWARD -m string --algo bm --string "peer_id=" -j DROP
+-A FORWARD -m string --algo bm --string ".torrent" -j DROP
+-A FORWARD -m string --algo bm --string "announce.php?passkey=" -j DROP
+-A FORWARD -m string --algo bm --string "torrent" -j DROP
+-A FORWARD -m string --algo bm --string "announce" -j DROP
+-A FORWARD -m string --algo bm --string "info_hash" -j DROP
 -A fail2ban-ssh -j RETURN
 COMMIT
 *raw

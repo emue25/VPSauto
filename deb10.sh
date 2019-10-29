@@ -9,9 +9,9 @@ wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Pl
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip"
 
 #repo
-#wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 #sleep 2
-#echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 buster main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+echo "deb http://build.openvpn.net/debian/openvpn/release/3.0.5 buster main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
 #Requirement
 apt update
 apt upgrade -y

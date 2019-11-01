@@ -14,6 +14,7 @@ MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
+tar -xzvf plugin.tar.gz
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/premiummenu.zip"
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6

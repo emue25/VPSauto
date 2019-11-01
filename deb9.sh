@@ -13,9 +13,8 @@ apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat uf
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
-wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
-wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/premiummenu.zip"
-
+wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
+wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip"
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -89,7 +88,7 @@ refresh_pattern ^ftp: 1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440
 refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
 refresh_pattern . 0 20% 4320
-visible_hostname FordSenpai
+visible_hostname kopet
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid.restart
@@ -458,7 +457,7 @@ echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
 echo "   - OpenVPN		: TCP 443 "  | tee -a log-install.txt
-echo "   - OpenVPN-SSL	: 587 "  | tee -a log-install.txt
+echo "   - OpenVPN-SSL	: 55 "  | tee -a log-install.txt
 echo "   - Dropbear		: 442"  | tee -a log-install.txt
 echo "   - Stunnel		: 444"  | tee -a log-install.txt
 echo "   - BadVPN  	: 7300"  | tee -a log-install.txt

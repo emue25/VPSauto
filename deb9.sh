@@ -15,11 +15,9 @@ MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
 tar -xzvf plugin.tgz
-cd plugin
-./configure
-make
-sudo make install
-wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/premiummenu.zip"
+#./configure
+#make && make install
+
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 

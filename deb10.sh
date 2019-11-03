@@ -11,7 +11,6 @@ apt-get -y install build-essential
 aptitude -y install build-essential
 apt-get install tar
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
-tar -xzvf plugin.tgz
 
 #repo
 sudo -s

@@ -13,6 +13,12 @@ apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat uf
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
+
+apt-get install yum
+yum -y install make automake autoconf gcc gcc++
+apt-get -y install build-essential
+aptitude -y install build-essential
+apt-get install tar
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
 tar -xzvf plugin.tgz
 

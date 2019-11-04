@@ -7,7 +7,8 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw fail2ban zip -y
+#apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw fail2ban zip -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
 
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
@@ -16,13 +17,11 @@ cd /root
 
 apt-get install yum
 yum -y install make automake autoconf gcc gcc++
-apt-get -y install build-essential
+#apt-get -y install build-essential
 aptitude -y install build-essential
 apt-get install tar
-wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
+wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
 tar -xzvf plugin.tgz
-#./configure
-#make && make install
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -88,7 +87,7 @@ http_access deny manager
 http_access allow localhost
 http_access deny all
 http_port 8080
-http_port 8000
+http_port 9999
 http_port 80
 http_port 3128
 coredump_dir /var/spool/squid3

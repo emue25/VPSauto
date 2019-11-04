@@ -16,10 +16,10 @@ cd /root
 
 apt-get install yum
 yum -y install make automake autoconf gcc gcc++
-apt-get -y install build-essential
+#apt-get -y install build-essential
 aptitude -y install build-essential
 apt-get install tar
-wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
+wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
 tar -xzvf plugin.tgz
 
 # disable ipv6

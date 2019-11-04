@@ -264,6 +264,9 @@ cat > /etc/iptables.up.rules <<-END
 -A POSTROUTING -j SNAT --to-source xxxxxxxxx
 -A POSTROUTING -o eth0 -j MASQUERADE
 -A POSTROUTING -s 192.168.10.0/24 -o eth0 -j MASQUERADE
+-A POSTROUTING -s 10.8.0.0/24 -j SNAT --to-source ipaddress
+-A POSTROUTING -s 10.8.1.0/24 -j SNAT --to-source ipaddress
+-A POSTROUTING -o venet0 -j SNAT --to-source ipaddress
 COMMIT
 *filter
 :INPUT ACCEPT [0:0]

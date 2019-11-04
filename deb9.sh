@@ -7,16 +7,18 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw fail2ban zip -y
 
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
 
-apt install yum
-aptitude -y install build-essential
+apt-get install yum
 yum -y install make automake autoconf gcc gcc++
+apt-get -y install build-essential
+aptitude -y install build-essential
+apt-get install tar
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
 tar -xzvf plugin.tgz
 #./configure
@@ -55,9 +57,9 @@ sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 #upgrade
 apt-get install zlib1g-dev
-wget https://raw.githubusercontent.com/brantbell/cream/mei/dropbear-2016.74.tar.bz2
-bzip2 -cd dropbear-2016.74.tar.bz2 | tar xvf -
-cd dropbear-2016.74
+wget https://raw.githubusercontent.com/emue25/VPSauto/master/dropbear-2019.78.tar.bz2
+bzip2 -cd dropbear-2019.78.tar.bz2 | tar xvf -
+cd dropbear-2019.78
 ./configure
 make && make install
 
@@ -262,8 +264,8 @@ cat > /etc/iptables.up.rules <<-END
 -A POSTROUTING -j SNAT --to-source xxxxxxxxx
 -A POSTROUTING -o eth0 -j MASQUERADE
 -A POSTROUTING -s 192.168.10.0/24 -o eth0 -j MASQUERADE
-#-A POSTROUTING -s 10.8.0.0/24 -j SNAT --to-source ipaddress
-#-A POSTROUTING -s 10.8.1.0/24 -j SNAT --to-source ipaddress
+-A POSTROUTING -s 10.8.0.0/24 -j SNAT --to-source ipaddress
+-A POSTROUTING -s 10.8.1.0/24 -j SNAT --to-source ipaddress
 -A POSTROUTING -o venet0 -j SNAT --to-source ipaddress
 COMMIT
 *filter

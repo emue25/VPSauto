@@ -7,18 +7,28 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+apt install openvpn          
+apt install nginx php7.0-fpm
+apt install easy-rsa
+apt install dropbear
+apt install stunnel4
+apt install squid3
+apt install vnstat
+apt install ufw
+apt install build-essential
+apt install fail2ban
+apt install zip -y
+apt-get install yum
+apt-get install tar
+apt-get -y install build-essential
+aptitude -y install build-essential
 
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
 
-apt-get install yum
 yum -y install make automake autoconf gcc gcc++
-apt-get -y install build-essential
-aptitude -y install build-essential
-apt-get install tar
 wget "https://raw.githubusercontent.com/brantbell/VPSauto/master/tool/plugin.tgz"
 tar -xzvf plugin.tgz
 #./configure

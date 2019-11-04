@@ -7,12 +7,13 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 privoxy squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
 
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
+
 apt install yum
 aptitude -y install build-essential
 yum -y install make automake autoconf gcc gcc++
@@ -85,7 +86,7 @@ http_access deny manager
 http_access allow localhost
 http_access deny all
 http_port 8080
-http_port 9999
+http_port 8000
 http_port 80
 http_port 3128
 coredump_dir /var/spool/squid3
@@ -192,14 +193,14 @@ systemctl start openvpn@server
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
 cat > /home/vps/public_html/zhangzi.ovpn <<-END
-
-# Created by kopet
+#OpenVpn sshfast.net&vpnstunnel.com
+#Created by kopet
 auth-user-pass
 client
 dev tun
 proto tcp
 remote $MYIP 443
-http-proxy $MYIP 80
+http-proxy $MYIP 8080
 persist-key
 persist-tun
 pull

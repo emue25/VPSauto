@@ -120,7 +120,7 @@ refresh_pattern ^ftp: 1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440
 refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
 refresh_pattern . 0 20% 4320
-visible_hostname FordSenpai
+visible_hostname kopet
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid.restart
@@ -247,61 +247,64 @@ echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
 echo '</ca>' >> /home/vps/public_html/client.ovpn
 
-#Create OpenVPN Config
-mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/clientssl.ovpn <<-END
-# OpenVPN Configuration by sshfast.net
-# by zhangzi ovpn ssl
+cat > /home/vps/public_html/Openssl.ovpn <<-END
+# Created by wang zki
+auth-user-pass
 client
 dev tun
 proto tcp
+remote 127.0.0.1 587
+route $MYIP 255.255.255.255 net_gateway
 persist-key
 persist-tun
-dev tun
 pull
 resolv-retry infinite
 nobind
 user nobody
-group nogroup
 comp-lzo
-ns-cert-type server
+remote-cert-tls server
 verb 3
 mute 2
+connect-retry 5 5
+connect-retry-max 8080
 mute-replay-warnings
-auth-user-pass
 redirect-gateway def1
 script-security 2
-route-method exe
-setenv opt block-outside-dns
-route-delay 2
-remote $MYIP 443
-cipher AES-128-CBC
-up /etc/openvpn/update-resolv-conf
-down /etc/openvpn/update-resolv-conf
-route $MYIP 255.255.255.255 net_gateway
+cipher none
+auth none
 END
-echo '<ca>' >> /home/vps/public_html/clientssl.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/clientssl.ovpn
-echo '</ca>' >> /home/vps/public_html/clientssl.ovpn
-cd /home/vps/public_html/
-tar -czf /home/vps/public_html/openvpnssl.tar.gz clientssl.ovpn
-tar -czf /home/vps/public_html/clientssl.tar.gz clientssl.ovpn
-cd
+echo '<ca>' >> /home/vps/public_html/Openssl.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/Openssl.ovpn
+echo '</ca>' >> /home/vps/public_html/Openssl.ovpn
+
+cat > /home/vps/public_html/stunnel.conf <<-END
+client = yes
+debug = 6
+[openvpn]
+accept = 127.0.0.1:55
+connect = $MYIP:587
+TIMEOUTclose = 0
+verify = 0
+sni = m.facebook.com
+END
+
 # Configure Stunnel
-apt update
-apt full-upgrade
-apt install -y stunnel4
-cd /etc/stunnel/
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
-sudo touch stunnel.conf
-echo "client = no" | sudo tee -a /etc/stunnel/stunnel.conf
-echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf
-echo "accept = 443" | sudo tee -a /etc/stunnel/stunnel.conf
-echo "connect = 127.0.0.1:55" | sudo tee -a /etc/stunnel/stunnel.conf
-echo "cert = /etc/stunnel/stunnel.pem" | sudo tee -a /etc/stunnel/stunnel.conf
-sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-sudo cp /etc/stunnel/stunnel.pem ~
+sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+cat > /etc/stunnel/stunnel.conf <<-END
+sslVersion = all
+pid = /stunnel.pid
+socket = l:TCP_NODELAY=1
+socket = r:TCP_NODELAY=1
+client = no
+[openvpn]
+accept = 587
+connect = 127.0.0.1:55
+cert = /etc/stunnel/stunnel.pem
+[dropbear]
+accept = 443
+connect = 127.0.0.1:442
+cert = /etc/stunnel/stunnel.pem
 
 END
 # Restart openvpn
@@ -470,12 +473,12 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-wget https://raw.githubusercontent.com/emue25/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
-#apt-get install unzip
-#cd /usr/local/bin/
-#wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
-#unzip bashmenu.zip
-#chmod +x /usr/local/bin/*
+#wget https://raw.githubusercontent.com/emue25/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
+apt-get install unzip
+cd /usr/local/bin/
+wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
+unzip bashmenu.zip
+chmod +x /usr/local/bin/*
 
 # cronjob
 echo "02 */12 * * * root service dropbear restart" > /etc/cron.d/dropbear

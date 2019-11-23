@@ -1,21 +1,23 @@
 #!/bin/sh
 #Script by weduz
-# initializing var
-MYIP=$(wget -qO- ipv4.icanhazip.com);
-MYIP2="s/xxxxxxxxx/$MYIP/g";
-cd /root
+#repo
+sudo -s
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 buster main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
 
-pt-get install yum
+apt-get install yum
 yum -y install make automake autoconf gcc gcc++
 apt-get -y install build-essential
 aptitude -y install build-essential
 apt-get install tar
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
 tar -xzvf /root/plugin.tgz
-#repo
-sudo -s
-wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
-echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 buster main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
+
+# initializing var
+MYIP=$(wget -qO- ipv4.icanhazip.com);
+MYIP2="s/xxxxxxxxx/$MYIP/g";
+cd /root
+
 #Requirement
 apt update
 apt upgrade -y
@@ -110,10 +112,6 @@ screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
 
 #install OpenVPN
-wget -P ~/ https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
-cd ~
-tar xvf EasyRSA-unix-v3.0.6.tgz
-cd ~/EasyRSA-v3.0.6/
 cp -r /usr/share/easy-rsa/ /etc/openvpn
 mkdir /etc/openvpn/easy-rsa/keys
 

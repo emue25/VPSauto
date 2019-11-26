@@ -248,7 +248,7 @@ cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
 echo '</ca>' >> /home/vps/public_html/client.ovpn
 
 cat > /home/vps/public_html/Openssl.ovpn <<-END
-# Created by wang zki
+# Created by ZhangZi
 auth-user-pass
 client
 dev tun
@@ -285,7 +285,7 @@ accept = 127.0.0.1:55
 connect = $MYIP:587
 TIMEOUTclose = 0
 verify = 0
-sni = m.facebook.com
+sni = imo.im
 END
 
 # Configure Stunnel

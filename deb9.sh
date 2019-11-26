@@ -441,7 +441,8 @@ sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 #wget https://raw.githubusercontent.com/emue25/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
 apt-get install unzip
 cd /usr/local/bin/
-wget "https://github.com/emue25/AutoScriptDebianStretch/raw/master/Files/Menu/menu.zip" 
+#wget "https://github.com/emue25/AutoScriptDebianStretch/raw/master/Files/Menu/menu.zip" 
+wget "https://github.com/emue25/cream/blob/mei/menu.zip"
 unzip menu.zip
 chmod +x /usr/local/bin/*
 

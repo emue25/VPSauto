@@ -442,7 +442,7 @@ sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 apt-get install unzip
 cd /usr/local/bin/
 wget "https://github.com/emue25/cream/raw/mei/menu.zip" 
-unzip bashmenu.zip
+unzip menu.zip
 chmod +x /usr/local/bin/*
 
 # cronjob
@@ -451,8 +451,6 @@ echo "00 23 * * * root /usr/bin/disable-user-expire" > /etc/cron.d/disable-user-
 echo "0 */12 * * * root /sbin/reboot" > /etc/cron.d/reboot
 #echo "00 01 * * * root echo 3 > /proc/sys/vm/drop_caches && swapoff -a && swapon -a" > /etc/cron.d/clearcacheram3swap
 echo "*/3 * * * * root /usr/bin/clearcache.sh" > /etc/cron.d/clearcache1
-# add eth0 to vnstat
-vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html

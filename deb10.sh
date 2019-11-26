@@ -122,9 +122,21 @@ screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
 
 #install OpenVPN
-cp -r /usr/share/easy-rsa/ /etc/openvpn
-mkdir /etc/openvpn/easy-rsa/keys
-
+apt-get -y install openvpn iptables openssl
+cp -R /usr/share/doc/openvpn/examples/easy-rsa/ /etc/openvpn
+# easy-rsa
+if [[ ! -d /etc/openvpn/easy-rsa/2.0/ ]]; then
+	wget --no-check-certificate -O ~/easy-rsa.tar.gz https://github.com/OpenVPN/easy-rsa/archive/2.2.2.tar.gz
+    tar xzf ~/easy-rsa.tar.gz -C ~/
+    mkdir -p /etc/openvpn/easy-rsa/2.0/
+    cp ~/easy-rsa-2.2.2/easy-rsa/2.0/* /etc/openvpn/easy-rsa/2.0/
+    rm -rf ~/easy-rsa-2.2.2
+    rm -rf ~/easy-rsa.tar.gz
+fi
+cd /etc/openvpn/easy-rsa/2.0/
+# correct the error
+cp -u -p openssl-1.0.0.cnf openssl.cnf
+# replace bits
 # replace bits
 sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="PH"|' /etc/openvpn/easy-rsa/vars
 sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Tarlac"|' /etc/openvpn/easy-rsa/vars

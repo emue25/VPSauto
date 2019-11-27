@@ -125,18 +125,18 @@ screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 apt-get -y install openvpn iptables openssl
 cp -R /usr/share/doc/openvpn/examples/easy-rsa/ /etc/openvpn
 # easy-rsa
-if [[ ! -d /etc/openvpn/easy-rsa/2.0/ ]]; then
-	wget --no-check-certificate -O ~/easy-rsa.tar.gz https://github.com/OpenVPN/easy-rsa/archive/2.2.2.tar.gz
-    tar xzf ~/easy-rsa.tar.gz -C ~/
-    mkdir -p /etc/openvpn/easy-rsa/2.0/
-    cp ~/easy-rsa-2.2.2/easy-rsa/2.0/* /etc/openvpn/easy-rsa/2.0/
-    rm -rf ~/easy-rsa-2.2.2
-    rm -rf ~/easy-rsa.tar.gz
+if [[ ! -d /etc/openvpn/EasyRSA-v3.0.6/ ]]; then
+	wget --no-check-certificate -O ~/easy-rsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
+
+    tar xzf ~/EasyRSA-v3.0.6.tgz -C ~/
+    mkdir -p /etc/openvpn/EasyRSA-v3.0.6/
+    cp ~/easy-rsa-3.0.6/EasyRSA-v3.0.6/* /etc/openvpn/EasyRSA-v3.0.6/
+    rm -rf ~/EasyRSA-v3.0.6
+    rm -rf ~/EasyRSA-v3.0.6.tgz
 fi
-cd /etc/openvpn/easy-rsa/2.0/
+cd /etc/openvpn/EasyRSA-v3.0.6/
 # correct the error
 cp -u -p openssl-1.0.0.cnf openssl.cnf
-# replace bits
 # replace bits
 sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="PH"|' /etc/openvpn/easy-rsa/vars
 sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Tarlac"|' /etc/openvpn/easy-rsa/vars

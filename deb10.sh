@@ -1,14 +1,5 @@
 #!/bin/sh
 #Script by weduz
-# initialisasi var
-export DEBIAN_FRONTEND=noninteractive
-OS=`uname -m`;
-MYIP=$(wget -qO- ipv4.icanhazip.com);
-MYIP2="s/xxxxxxxxx/$MYIP/g";
-ether=`ifconfig | cut -c 1-8 | sort | uniq -u | grep venet0 | grep -v venet0:`
-if [[ $ether = "" ]]; then
-        ether=eth0
-fi
 
 sudo -s
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
@@ -21,7 +12,6 @@ aptitude -y install build-essential
 apt-get install tar
 wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
 tar -xzvf /root/plugin.tgz
-
 
 #Requirement
 apt update

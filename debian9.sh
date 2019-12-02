@@ -253,8 +253,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote 127.0.0.1 587
-route $MYIP 255.255.255.255 net_gateway
+remote $MYIP 587
 persist-key
 persist-tun
 pull
@@ -272,6 +271,10 @@ redirect-gateway def1
 script-security 2
 cipher none
 auth none
+script-security 2
+up /etc/openvpn/update-resolv-conf
+down /etc/openvpn/update-resolv-conf
+route $MYIP 255.255.255.255 net_gateway
 END
 echo '<ca>' >> /home/vps/public_html/Openssl.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/Openssl.ovpn

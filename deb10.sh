@@ -1,22 +1,10 @@
 #!/bin/sh
 #Script by weduz
 
-sudo -s
-wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
-echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 buster main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
-
-apt-get install yum
-yum -y install make automake autoconf gcc gcc++
-apt-get -y install build-essential
-aptitude -y install build-essential
-apt-get install tar
-wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Plugins/plugin.tgz"
-tar -xzvf /root/plugin.tgz
-
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.3-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+apt install php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip -y
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
@@ -105,129 +93,6 @@ sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
-
-#install OpenVPN
-apt-get -y install openvpn iptables openssl
-cp -R /usr/share/doc/openvpn/examples/easy-rsa/ /etc/openvpn
-# easy-rsa
-if [[ ! -d /etc/openvpn/EasyRSA-v3.0.6/ ]]; then
-	wget --no-check-certificate -O ~/easy-rsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
-
-    tar xzf ~/EasyRSA-v3.0.6.tgz -C ~/
-    mkdir -p /etc/openvpn/EasyRSA-v3.0.6/
-    cp ~/easy-rsa-3.0.6/EasyRSA-v3.0.6/* /etc/openvpn/EasyRSA-v3.0.6/
-    rm -rf ~/EasyRSA-v3.0.6
-    rm -rf ~/EasyRSA-v3.0.6.tgz
-fi
-cd /etc/openvpn/EasyRSA-v3.0.6/
-# correct the error
-cp -u -p openssl-1.0.0.cnf openssl.cnf
-# replace bits
-sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="PH"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Tarlac"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Concepcion"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="JohnFordTV"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_EMAIL="me@myhost.mydomain"|export KEY_EMAIL="exodia090@gmail.com"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_OU="MyOrganizationalUnit"|export KEY_OU="FordSenpai"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_NAME="EasyRSA"|export KEY_NAME="FordSenpai"|' /etc/openvpn/easy-rsa/vars
-sed -i 's|export KEY_OU=changeme|export KEY_OU=FordSenpai|' /etc/openvpn/easy-rsa/vars
-#Create Diffie-Helman Pem
-openssl dhparam -out /etc/openvpn/dh1024.pem 1024
-# Create PKI
-cd /etc/openvpn/easy-rsa
-cp openssl-1.0.0.cnf openssl.cnf
-. ./vars
-./clean-all
-export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" --initca $*
-# create key server
-export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" --server server
-# setting KEY CN
-export EASY_RSA="${EASY_RSA:-.}"
-"$EASY_RSA/pkitool" client
-cd
-#cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key} /etc/openvpn
-cp /etc/openvpn/easy-rsa/keys/server.crt /etc/openvpn/server.crt
-cp /etc/openvpn/easy-rsa/keys/server.key /etc/openvpn/server.key
-cp /etc/openvpn/easy-rsa/keys/ca.crt /etc/openvpn/ca.crt
-chmod +x /etc/openvpn/ca.crt
-
-# Setting Server
-tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
-chmod +x /usr/lib/openvpn/*
-cat > /etc/openvpn/server.conf <<-END
-port 443
-proto tcp
-dev tun
-ca ca.crt
-cert server.crt
-key server.key
-dh dh1024.pem
-verify-client-cert none
-username-as-common-name
-plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
-server 192.168.10.0 255.255.255.0
-ifconfig-pool-persist ipp.txt
-push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
-push "route-method exe"
-push "route-delay 2"
-socket-flags TCP_NODELAY
-push "socket-flags TCP_NODELAY"
-keepalive 10 120
-comp-lzo
-user nobody
-group nogroup
-persist-key
-persist-tun
-status openvpn-status.log
-log openvpn.log
-verb 3
-ncp-disable
-cipher none
-auth none
-END
-systemctl start openvpn@server
-
-#Create OpenVPN Config
-mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/zhangzi.ovpn <<-END
-# Created by kopet
-auth-user-pass
-client
-dev tun
-proto tcp
-remote $MYIP 443
-http-proxy $MYIP 80
-persist-key
-persist-tun
-pull
-resolv-retry infinite
-nobind
-user nobody
-comp-lzo
-remote-cert-tls server
-verb 3
-mute 2
-connect-retry 5 5
-connect-retry-max 8080
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-END
-echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
-echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
-#Setting UFW
-ufw allow ssh
-ufw allow 443/tcp
-sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
-sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
-
 # set ipv4 forward
 echo 1 > /proc/sys/net/ipv4/ip_forward
 sed -i 's|#net.ipv4.ip_forward=1|net.ipv4.ip_forward=1|' /etc/sysctl.conf
@@ -242,12 +107,10 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [dropbear]
-accept = 444
+accept = 443
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 END
-
-
 
 # set ipv4 forward
 echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -323,72 +186,6 @@ COMMIT
 END
 sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
-# Configure Nginx
-cd
-rm /etc/nginx/sites-enabled/default
-rm /etc/nginx/sites-available/default
-cat > /etc/nginx/nginx.conf <<END3
-user www-data;
-worker_processes 1;
-pid /var/run/nginx.pid;
-events {
-	multi_accept on;
-  worker_connections 1024;
-}
-http {
-	gzip on;
-	gzip_vary on;
-	gzip_comp_level 5;
-	gzip_types    text/plain application/x-javascript text/xml text/css;
-	autoindex on;
-  sendfile on;
-  tcp_nopush on;
-  tcp_nodelay on;
-  keepalive_timeout 65;
-  types_hash_max_size 2048;
-  server_tokens off;
-  include /etc/nginx/mime.types;
-  default_type application/octet-stream;
-  access_log /var/log/nginx/access.log;
-  error_log /var/log/nginx/error.log;
-  client_max_body_size 32M;
-	client_header_buffer_size 8m;
-	large_client_header_buffers 8 8m;
-	fastcgi_buffer_size 8m;
-	fastcgi_buffers 8 8m;
-	fastcgi_read_timeout 600;
-  include /etc/nginx/conf.d/*.conf;
-}
-END3
-mkdir -p /home/vps/public_html
-wget -O /home/vps/public_html/index.html "https://sshfast.net/"
-echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
-args='$args'
-uri='$uri'
-document_root='$document_root'
-fastcgi_script_name='$fastcgi_script_name'
-cat > /etc/nginx/conf.d/vps.conf <<END4
-server {
-  listen       85;
-  server_name  127.0.0.1 localhost;
-  access_log /var/log/nginx/vps-access.log;
-  error_log /var/log/nginx/vps-error.log error;
-  root   /home/vps/public_html;
-  location / {
-    index  index.html index.htm index.php;
-    try_files $uri $uri/ /index.php?$args;
-  }
-  location ~ \.php$ {
-    include /etc/nginx/fastcgi_params;
-    fastcgi_pass  127.0.0.1:9000;
-    fastcgi_index index.php;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-  }
-}
-END4
-sed -i 's/listen = \/var\/run\/php7.3-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.3/fpm/pool.d/www.conf
-/etc/init.d/nginx restart
-
 
 
 #Create Admin
@@ -410,8 +207,8 @@ sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 #wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
 apt-get install unzip
 cd /usr/local/bin/
-wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
-unzip bashmenu.zip
+wget "https://github.com/emue25/VPSauto/raw/master/tool/menu.zip" 
+unzip menu.zip
 chmod +x /usr/local/bin/*
 
 # cronjob
@@ -434,10 +231,10 @@ apt-get install libxml-parser-perl -y -f
 vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
-/etc/init.d/nginx start
+#/etc/init.d/nginx start
 /etc/init.d/php7.3-fpm start
 /etc/init.d/vnstat restart
-/etc/init.d/openvpn restart
+#/etc/init.d/openvpn restart
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart

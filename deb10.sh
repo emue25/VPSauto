@@ -1,5 +1,9 @@
 #!/bin/sh
 #Script by weduz
+# initializing var
+MYIP=$(wget -qO- ipv4.icanhazip.com);
+MYIP2="s/xxxxxxxxx/$MYIP/g";
+cd /root
 
 #Requirement
 apt update

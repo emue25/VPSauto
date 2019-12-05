@@ -501,6 +501,14 @@ vnstat -u -i eth0
 cd /home/vps/public_html
 zip configs.zip client.ovpn
 
+# install ddos deflate
+cd
+apt-get -y install dnsutils dsniff
+wget https://github.com/jgmdev/ddos-deflate/archive/master.zip
+unzip master.zip
+cd ddos-deflate-master
+./install.sh
+rm -rf /root/master.zip
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f
 

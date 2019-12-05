@@ -308,7 +308,10 @@ cert = /etc/stunnel/stunnel.pem
 accept = 443
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
-
+[squid]
+accept = 8888
+connect = 127.0.0.1:3128
+cert = /etc/stunnel/stunnel.pem
 END
 # Restart openvpn
 /etc/init.d/openvpn restart

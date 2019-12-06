@@ -41,7 +41,7 @@ rm /root/webmin_1.930_all.deb
 # install screenfetch
 cd
 rm -rf /root/.bashrc
-wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
+wget -O /root/.bashrc https://raw.githubusercontent.com/emue25/cream/mei/.bashrc
 
 #text gambar
 apt-get install boxes
@@ -484,7 +484,7 @@ sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 apt-get install unzip
 cd /usr/local/bin/
 #wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
-wget "https://github.com/emue25/VPSauto/raw/master/tool/menu.zip"
+wget "https://github.com/emue25/cream/raw/mei/menu.zip"
 unzip menu.zip
 chmod +x /usr/local/bin/*
 

@@ -48,44 +48,17 @@ apt-get install boxes
 # text pelangi
 sudo apt-get install ruby -y
 sudo gem install lolcat
-
+# setting port ssh
+sed -i '/Port 22/a Port 143' /etc/ssh/sshd_config
+sed -i '/Port 22/a Port  90' /etc/ssh/sshd_config
+sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
+/etc/init.d/ssh restart
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
+sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 777 -p 110"/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
-#upgrade
-apt-get install zlib1g-dev
-wget https://raw.githubusercontent.com/emue25/VPSauto/master/dropbear-2019.78.tar.bz2
-bzip2 -cd dropbear-2019.78.tar.bz2 | tar xvf -
-cd dropbear-2019.78
-./configure
-make && make install
-# install privoxy
-cat > /etc/privoxy/config <<-END
-user-manual /usr/share/doc/privoxy/user-manual
-confdir /etc/privoxy
-logdir /var/log/privoxy
-filterfile default.filter
-logfile logfile
-listen-address  0.0.0.0:3128
-listen-address  0.0.0.0:8000
-toggle  1
-enable-remote-toggle  0
-enable-remote-http-toggle  0
-enable-edit-actions 0
-enforce-blocks 0
-buffer-limit 4096
-enable-proxy-authentication-forwarding 1
-forwarded-connect-retries  1
-accept-intercepted-requests 1
-allow-cgi-request-crunching 1
-split-large-forms 0
-keep-alive-timeout 5
-tolerate-pipelining 1
-socket-timeout 300
-permit-access 0.0.0.0/0 xxxxxxxxx
-END
-sed -i $MYIP2 /etc/privoxy/config;
+/etc/init.d/dropbear restart
 
 # install squid3
 cat > /etc/squid/squid.conf <<-END
@@ -120,7 +93,7 @@ refresh_pattern ^ftp: 1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440
 refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
 refresh_pattern . 0 20% 4320
-visible_hostname kopet
+visible_hostname ZhangZi
 END
 sed -i $MYIP2 /etc/squid/squid.conf;
 /etc/init.d/squid.restart
@@ -217,7 +190,7 @@ systemctl start openvpn@server
 
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
-cat > /home/vps/public_html/client.ovpn <<-END
+cat > /home/vps/public_html/zhangzi.ovpn <<-END
 # Created by kopet
 auth-user-pass
 client
@@ -243,9 +216,9 @@ script-security 2
 cipher none
 auth none
 END
-echo '<ca>' >> /home/vps/public_html/client.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
-echo '</ca>' >> /home/vps/public_html/client.ovpn
+echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
+echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
 
 cat > /home/vps/public_html/Openssl.ovpn <<-END
 # Created by ZhangZi
@@ -253,7 +226,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 587
+remote $MYIP 444
 persist-key
 persist-tun
 pull
@@ -280,16 +253,6 @@ echo '<ca>' >> /home/vps/public_html/Openssl.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/Openssl.ovpn
 echo '</ca>' >> /home/vps/public_html/Openssl.ovpn
 
-cat > /home/vps/public_html/stunnel.conf <<-END
-client = yes
-debug = 6
-[openvpn]
-accept = 127.0.0.1:55
-connect = $MYIP:587
-TIMEOUTclose = 0
-verify = 0
-sni = imo.im
-END
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
@@ -301,7 +264,7 @@ socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
-accept = 587
+accept = 444
 connect = 127.0.0.1:55
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
@@ -479,11 +442,9 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-#wget https://raw.githubusercontent.com/emue25/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
 
 apt-get install unzip
 cd /usr/local/bin/
-#wget "https://github.com/johndesu090/AutoScriptDebianStretch/raw/master/Files/Menu/bashmenu.zip" 
 wget "https://github.com/emue25/cream/raw/mei/menu.zip"
 unzip menu.zip
 chmod +x /usr/local/bin/*
@@ -499,7 +460,7 @@ vnstat -u -i eth0
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn
+zip configs.zip zhangzi.ovpn
 
 # install ddos deflate
 cd

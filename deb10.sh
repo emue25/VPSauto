@@ -114,6 +114,12 @@ client = no
 accept = 443
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
+
+cert = stunnel.pem
+client = yes
+[squid]
+accept = 127.0.0.1:8080
+accept = 8888
 END
 
 # set ipv4 forward

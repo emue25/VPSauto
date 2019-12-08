@@ -256,7 +256,7 @@ echo '</ca>' >> /home/vps/public_html/Openssl.ovpn
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=ID' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
 sslVersion = all
 pid = /stunnel.pid
@@ -442,8 +442,9 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-
-apt-get install unzip
+apt-get -y remove --purge unscd
+apt-get -y install dnsutils
+apt-get -y install unzip
 cd /usr/local/bin/
 wget "https://github.com/emue25/cream/raw/mei/menu.zip"
 unzip menu.zip
@@ -496,8 +497,8 @@ echo " "
 echo "Installation has been completed!!"
 echo " Please Reboot your VPS"
 echo "--------------------------- Configuration Setup Server -------------------------"
-echo "                          Debian9 Script HostingTermurah.net                     "
-echo "                              -modifikasi by zhangzi-                                   "
+echo "                          Debian9 Script vpnstunnel.net                         "
+echo "                              -modifikasi by zhangzi-                           "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt

@@ -86,7 +86,7 @@ http_access allow localhost
 http_access deny all
 http_port 8080
 http_port 8000
-http_port 80
+http_port 81
 http_port 3128
 coredump_dir /var/spool/squid3
 refresh_pattern ^ftp: 1440 20% 10080
@@ -190,16 +190,16 @@ systemctl start openvpn@server
 
 #Server2
 cat > /etc/openvpn/server2.conf <<-END
-port 1194
+port 443
 proto tcp
 dev tun
 ca ca.crt
 cert server.crt
 key server.key
-dh dh.pem
+dh dh1024.pem
 verify-client-cert none
 username-as-common-name
-plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so login
+plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
 server 192.168.100.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
@@ -233,7 +233,7 @@ client
 dev tun
 proto tcp
 remote $MYIP 55
-http-proxy $MYIP 80
+http-proxy $MYIP 8080
 persist-key
 persist-tun
 pull
@@ -256,39 +256,8 @@ echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
 echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
 
-cat > /home/vps/public_html/Openssl.ovpn <<-END
-# Created by ZhangZi
-auth-user-pass
-client
-dev tun
-proto tcp
-remote $MYIP 444
-persist-key
-persist-tun
-pull
-resolv-retry infinite
-nobind
-user nobody
-comp-lzo
-remote-cert-tls server
-verb 3
-mute 2
-connect-retry 5 5
-connect-retry-max 8080
-mute-replay-warnings
-redirect-gateway def1
-script-security 2
-cipher none
-auth none
-script-security 2
-up /etc/openvpn/update-resolv-conf
-down /etc/openvpn/update-resolv-conf
-route $MYIP 255.255.255.255 net_gateway
-END
-echo '<ca>' >> /home/vps/public_html/Openssl.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/Openssl.ovpn
-echo '</ca>' >> /home/vps/public_html/Openssl.ovpn
-
+#restart
+/etc/init.d/openvpn restart
 
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
@@ -299,12 +268,9 @@ pid = /stunnel.pid
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 client = no
-[openvpn]
-accept = 444
-connect = 127.0.0.1:55
-cert = /etc/stunnel/stunnel.pem
+
 [dropbear]
-accept = 443
+accept = 80
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 [squid]
@@ -312,13 +278,12 @@ accept = 8888
 connect = 127.0.0.1:3128
 cert = /etc/stunnel/stunnel.pem
 END
-# Restart openvpn
-/etc/init.d/openvpn restart
 /etc/init.d/stunnel4 restart
 
+#ufw
 ufw allow ssh
 ufw allow 55/tcp
-ufw allow 1194/tcp
+ufw allow 443/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -464,7 +429,7 @@ END4
 sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php7.0/fpm/pool.d/www.conf
 /etc/init.d/nginx restart
 
-#Create Admin
+#Create user
 useradd admin
 echo "admin:kopet" | chpasswd
 

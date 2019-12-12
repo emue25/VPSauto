@@ -14,7 +14,7 @@ MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
 
-apt-get install yum
+apt-get -y install yum
 yum -y install make automake autoconf gcc gcc++
 #apt-get -y install build-essential
 aptitude -y install build-essential
@@ -49,9 +49,9 @@ apt-get install boxes
 sudo apt-get install ruby -y
 sudo gem install lolcat
 # setting port ssh
-sed -i '/Port 22/a Port 143' /etc/ssh/sshd_config
+sed -i '/Port 22/a Port 22' /etc/ssh/sshd_config
 sed -i '/Port 22/a Port  90' /etc/ssh/sshd_config
-sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
+sed -i 's/Port 22/Port  143/g' /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
@@ -191,36 +191,25 @@ systemctl start openvpn@server
 #Server2
 cat > /etc/openvpn/server2.conf <<-END
 port 1194
-proto tcp
-dev tun
-ca ca.crt
-cert server.crt
-key server.key
-dh dh1024.pem
-verify-client-cert none
-username-as-common-name
-plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
-server 192.168.10.1 255.255.255.255
-ifconfig-pool-persist ipp.txt
-push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
-push "route-method exe"
-push "route-delay 2"
-socket-flags TCP_NODELAY
-push "socket-flags TCP_NODELAY"
-keepalive 10 120
+proto tcp-server
+dev tun0
+cipher AES-256-CBC
 comp-lzo
-user nobody
-group nogroup
+dh /tmp/openvpn/dh.pem
+ca /tmp/openvpn/ca.crt
+cert /tmp/openvpn/cert.pem
+key /tmp/openvpn/key.pem
+tls-auth /tmp/openvpn/ta.key 0
+server 10.32.71.0 255.255.255.0
+client-to-client
+keepalive 10 120
+push “route 192.168.10.0 255.255.255.0”
+push “redirect-gateway”
+push “dhcp-option DNS 208.67.222.222”
+push “dhcp-option DNS 208.67.220.220”
 persist-key
 persist-tun
-status openvpn-status.log
-log openvpn.log
-verb 3
-ncp-disable
-cipher none
-auth none
+verb 5
 END
 systemctl start openvpn@server2
 

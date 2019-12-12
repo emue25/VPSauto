@@ -191,25 +191,36 @@ systemctl start openvpn@server
 #Server2
 cat > /etc/openvpn/server2.conf <<-END
 port 1194
-proto tcp-server
-dev tun0
-cipher AES-256-CBC
-comp-lzo
-dh /tmp/openvpn/dh.pem
-ca /tmp/openvpn/ca.crt
-cert /tmp/openvpn/cert.pem
-key /tmp/openvpn/key.pem
-tls-auth /tmp/openvpn/ta.key 0
-server 10.32.71.0 255.255.255.0
-client-to-client
+proto tcp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+verify-client-cert none
+username-as-common-name
+plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so login
+server 192.168.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8"
+push "dhcp-option DNS 8.8.4.4"
+push "route-method exe"
+push "route-delay 2"
+socket-flags TCP_NODELAY
+push "socket-flags TCP_NODELAY"
 keepalive 10 120
-push “route 192.168.10.0 255.255.255.0”
-push “redirect-gateway”
-push “dhcp-option DNS 208.67.222.222”
-push “dhcp-option DNS 208.67.220.220”
+comp-lzo
+user nobody
+group nogroup
 persist-key
 persist-tun
-verb 5
+status openvpn-status.log
+log openvpn.log
+verb 3
+ncp-disable
+cipher none
+auth none
 END
 systemctl start openvpn@server2
 

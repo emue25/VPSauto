@@ -49,9 +49,9 @@ apt-get install boxes
 sudo apt-get install ruby -y
 sudo gem install lolcat
 # setting port ssh
-sed -i '/Port 22/a Port 22' /etc/ssh/sshd_config
-sed -i '/Port 22/a Port  90' /etc/ssh/sshd_config
-sed -i 's/Port 22/Port  143/g' /etc/ssh/sshd_config
+sed -i '/Port 22/a Port 143' /etc/ssh/sshd_config
+sed -i '/Port 22/a Port 90' /etc/ssh/sshd_config
+sed -i 's/Port 22/ Port 22/g' /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
@@ -200,7 +200,7 @@ dh dh.pem
 verify-client-cert none
 username-as-common-name
 plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so login
-server 192.168.0.0 255.255.255.0
+server 192.168.100.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8"
@@ -335,7 +335,7 @@ cat > /etc/iptables.up.rules <<-END
 -A POSTROUTING -j SNAT --to-source xxxxxxxxx
 -A POSTROUTING -o eth0 -j MASQUERADE
 -A POSTROUTING -s 192.168.10.0/24 -o eth0 -j MASQUERADE
--A POSTROUTING -s 192.168.0.0/24 -o eth0 -j MASQUERADE
+-A POSTROUTING -s 192.168.100.0/24 -o eth0 -j MASQUERADE
 COMMIT
 *filter
 :INPUT ACCEPT [0:0]

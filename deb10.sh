@@ -135,6 +135,7 @@ cat > /etc/iptables.up.rules <<-END
 -A POSTROUTING -j SNAT --to-source xxxxxxxxx
 -A POSTROUTING -o eth0 -j MASQUERADE
 -A POSTROUTING -s 192.168.10.0/24 -o eth0 -j MASQUERADE
+-A POSTROUTING -s 192.168.100.0/24 -o eth0 -j MASQUERADE
 COMMIT
 *filter
 :INPUT ACCEPT [0:0]
@@ -220,7 +221,14 @@ cd /usr/local/bin/
 wget "https://github.com/emue25/VPSauto/raw/master/tool/menu.zip" 
 unzip menu.zip
 chmod +x /usr/local/bin/*
-
+# install ddos deflate
+cd
+apt-get -y install dnsutils dsniff
+wget https://github.com/jgmdev/ddos-deflate/archive/master.zip
+unzip master.zip
+cd ddos-deflate-master
+./install.sh
+rm -rf /root/master.zip
 # cronjob
 echo "02 */12 * * * root service dropbear restart" > /etc/cron.d/dropbear
 echo "00 23 * * * root /usr/bin/disable-user-expire" > /etc/cron.d/disable-user-expire
@@ -229,10 +237,6 @@ echo "00 01 * * * root echo 3 > /proc/sys/vm/drop_caches && swapoff -a && swapon
 echo "*/3 * * * * root /usr/bin/clearcache.sh" > /etc/cron.d/clearcache1
 # add eth0 to vnstat
 vnstat -u -i eth0
-
-# compress configs
-cd /home/vps/public_html
-zip configs.zip client.ovpn
 
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f

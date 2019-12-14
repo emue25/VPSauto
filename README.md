@@ -22,10 +22,4 @@ apt-get install libxml-parser-perl<br><br>
 <b>Ubuntu 16.04 x64 or Debian 8.10 x64Softether Script</b><br>
 wget https://raw.githubusercontent.com/brantbell/VPSauto/master/SEsetup.sh && chmod +x SEsetup.sh && ./SEsetup.sh<br><br>
 
-<br>
-<b>Debian 9 Autoscript sshvpn</b><br>
-apt-get install wget && wget https://raw.githubusercontent.com/emue25/VPSauto/master/tool/Deb9 && chmod +x Deb9 && ./Deb9 && rm -f Deb9 && history -c
 
-debian9
-=======
-apt-get install wget && wget https://raw.githubusercontent.com/emue25/VPSauto/master/debian9.sh && chmod +x debian9.sh && ./debian9.sh && rm -f debian9.sh && history -c

@@ -291,9 +291,6 @@ echo '<ca>' >> /home/vps/public_html/zhangzi.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/zhangzi.ovpn
 echo '</ca>' >> /home/vps/public_html/zhangzi.ovpn
 
-#restart
-/etc/init.d/openvpn restart
-
 # Configure Stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
 openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=ID' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
@@ -313,8 +310,9 @@ accept = 8888
 connect = 127.0.0.1:3128
 cert = /etc/stunnel/stunnel.pem
 END
+#restart
+/etc/init.d/openvpn restart
 /etc/init.d/stunnel4 restart
-
 #ufw
 ufw allow ssh
 ufw allow 55/tcp

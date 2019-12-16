@@ -190,6 +190,7 @@ systemctl start openvpn@server.service
 
 #Server2
 cat > /etc/openvpn/server2.conf <<-END
+local serverip
 port 443
 proto tcp
 dev tun

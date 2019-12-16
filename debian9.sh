@@ -201,7 +201,8 @@ verify-client-cert none
 username-as-common-name
 plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
 server 192.168.100.0 255.255.255.0
-vpn_gateway route 172.121.0.0 255.255.0.0 vpn_gateway
+route 192.168.10.0 255.255.0.0 vpn_gateway
+route 172.121.0.0 255.255.0.0 vpn_gateway
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8"

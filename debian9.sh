@@ -190,14 +190,10 @@ systemctl start openvpn@server.service
 
 #Server2
 cat > /etc/openvpn/server2.conf <<-END
-fragment 1412
-mssfix 1412
-sndbuf 2048
-rcvbuf 2048
 port 443
 proto tcp
 dev tun
-ifconfig 192.168.2.1 255.255.255.0
+ifconfig 192.168.100.0 255.255.255.0
 ca ca.crt
 cert server.crt
 key server.key
@@ -205,7 +201,7 @@ dh dh1024.pem
 verify-client-cert none
 username-as-common-name
 plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
-server-bridge 192.168.2.1 255.255.255.0 192.168.2.2 192.168.2.254
+local server 192.168.2.1 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8"
@@ -269,10 +265,6 @@ mkdir -p /home/vps/public_html
 cat > /home/vps/public_html/zhangzi.ovpn <<-END
 # Created by kopet
 auth-user-pass
-fragment 1412
-mssfix 1412
-sndbuf 2048
-rcvbuf 2048
 client
 dev tun
 proto tcp

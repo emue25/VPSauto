@@ -37,7 +37,7 @@ rm /root/webmin_1.930_all.deb
 # install screenfetch
 cd
 rm -rf /root/.bashrc
-wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
+wget -O /root/.bashrc https://raw.githubusercontent.com/emue25/cream/mei/.bashrc
 
 #text gambar
 apt install boxes -y
@@ -215,12 +215,14 @@ sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
-#wget https://raw.githubusercontent.com/brantbell/cream/mei/install-premiumscript.sh -O - -o /dev/null|sh
-apt-get install unzip
+apt-get -y remove --purge unscd
+apt-get -y install dnsutils
+apt-get -y install unzip
 cd /usr/local/bin/
-wget "https://github.com/emue25/VPSauto/raw/master/tool/menu.zip" 
+wget "https://github.com/emue25/cream/raw/mei/menu.zip"
 unzip menu.zip
 chmod +x /usr/local/bin/*
+
 # install ddos deflate
 cd
 apt-get -y install dnsutils dsniff

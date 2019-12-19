@@ -40,14 +40,15 @@ rm -rf /root/.bashrc
 wget -O /root/.bashrc https://raw.githubusercontent.com/emue25/cream/mei/.bashrc
 
 #text gambar
-apt install boxes -y
+apt install boxes
 # text pelangi
-sudo apt-get install ruby -y
-sudo gem install lolcat -y
+sudo apt install ruby
+sudo apt gem install lolcat
 
 # install dropbear
 sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
+sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 777 -p 110"/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 
 

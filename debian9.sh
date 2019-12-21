@@ -7,7 +7,7 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip -y
+apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip tar -y
 
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
@@ -193,7 +193,6 @@ cat > /etc/openvpn/server2.conf <<-END
 port 443
 proto tcp
 dev tun
-ifconfig 192.168.100.0 255.255.255.0
 ca ca.crt
 cert server.crt
 key server.key
@@ -201,7 +200,7 @@ dh dh1024.pem
 verify-client-cert none
 username-as-common-name
 plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
-local server 192.168.2.1 255.255.255.0
+server 192.168.200.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8"
@@ -227,7 +226,7 @@ systemctl start openvpn@server2.service
 
 #server3
 cat > /etc/openvpn/server3.conf <<-END
-port 1194
+port 1195
 proto tcp
 dev tun
 ca ca.crt
@@ -237,7 +236,7 @@ dh dh1024.pem
 verify-client-cert none
 username-as-common-name
 plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
-server 192.168.200.0 255.255.255.0
+server 192.168.100.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8"
@@ -318,7 +317,7 @@ END
 ufw allow ssh
 ufw allow 55/tcp
 ufw allow 443/tcp
-ufw allow 1194/tcp
+ufw allow 1195/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -541,14 +540,14 @@ echo "                              -modifikasi by zhangzi-                     
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Malingsial  (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malaysia-Asu  (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
 echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
-echo "   - OpenVPN		: TCP 55, 443, 1147"  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 55, 443, 1195"  | tee -a log-install.txt
 echo "   - Dropbear		: 442"  | tee -a log-install.txt
 echo "   - Stunnel		: 80, 8888"  | tee -a log-install.txt
 echo "   - BadVPN  	: 7300"  | tee -a log-install.txt

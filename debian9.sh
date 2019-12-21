@@ -227,7 +227,7 @@ systemctl start openvpn@server2.service
 
 #server3
 cat > /etc/openvpn/server3.conf <<-END
-port 1147
+port 1194
 proto tcp
 dev tun
 ca ca.crt
@@ -318,7 +318,7 @@ END
 ufw allow ssh
 ufw allow 55/tcp
 ufw allow 443/tcp
-ufw allow 1147/tcp
+ufw allow 1194/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -467,7 +467,7 @@ sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/p
 
 #Create user
 useradd admin
-echo "admin:kopet" | chpasswd
+echo "admin:mania" | chpasswd
 
 
 # Create and Configure rc.local

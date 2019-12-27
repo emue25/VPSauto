@@ -1,6 +1,44 @@
 #!/bin/sh
 #Script by ZhangZi
+# check registered ip
+wget -q -O IP https://github.com/emue25/VPSauto/edit/master/IP.txt
+if ! grep -w -q $MYIP IP; then
+	echo "Maaf, hanya IP yang terdaftar yang bisa menggunakan script ini!"
+        echo "     
 
+                       
+               =============== OS DEBIAN 64-bit ================
+               ♦                                             ♦
+               ♦  AUTOSCRIPT CREATED BY VPNSTUNNEL.COM       ♦
+	       ♦                     &                       ♦
+	       ♦               SSHFAST.NET                   ♦
+	       ♦           MODIFIED BY DENBAGUSS             ♦
+               ♦       -----------Contact Us------------     ♦ 
+               ♦            Tel : +601122334455              ♦
+               ♦         { Sms/whatsapp/telegram }           ♦ 
+               ♦       http://facebook.com/t34mh4ck3r        ♦    
+               ♦            http://t.me/denbaguss            ♦
+               ♦                                             ♦
+               =============== OS DEBIAN 64-bit ================
+               
+                 Please make payment before use auto script
+                 ..........................................
+                 .           Price: Rm.30 = 1IP           .
+                 .          *****************             .
+                 .           Maybank Account              .
+                 .           =================            .
+                 .          No   : Hubungi admin          .
+                 .          Name : @denbaguss             .
+                 ..........................................   
+                          Thank You For Choice Us"
+
+	echo "    Hubungi: editor ( http://t.me/denbaguss)"
+	
+	rm /root/IP
+	rm ori.sh
+	rm -f /root/IP
+	exit
+fi
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
 echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list

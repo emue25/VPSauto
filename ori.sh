@@ -1,7 +1,32 @@
 #!/bin/sh
 #Script by ZhangZi
+if [[ $USER != "root" ]]; then
+	echo "Maaf, Anda harus menjalankan ini sebagai root"
+	exit
+fi
+
+# initialisasi var
+export DEBIAN_FRONTEND=noninteractive
+OS=`uname -m`;
+
+MYIP=$(ifconfig | grep 'inet addr:' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d: -f2 | awk '{ print $1}' | head -1)
+if [ "$MYIP" = "" ]; then
+	MYIP=$(wget -qO- ipv4.icanhazip.com)
+fi
+MYIP2="s/xxxxxxxxx/$MYIP/g";
+MYIP3="s/xxxxxxxxx:443/$MYIP:443/g";
+ether=`ifconfig | cut -c 1-8 | sort | uniq -u | grep venet0 | grep -v venet0:`
+if [[ $ether = "" ]]; then
+        ether=eth0
+fi
+
+	source="https://raw.githubusercontent.com/emue25/VPSauto"
+
+
+# go to root
+cd
 # check registered ip
-wget -q -O IP https://github.com/emue25/VPSauto/edit/master/IP.txt
+wget -q -O IP https://raw.githubusercontent.com/emue25/VPSauto/master/IP.txt
 if ! grep -w -q $MYIP IP; then
 	echo "Maaf, hanya IP yang terdaftar yang bisa menggunakan script ini!"
         echo "     
@@ -48,9 +73,9 @@ apt upgrade -y
 apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip tar -y
 
 # initializing var
-MYIP=$(wget -qO- ipv4.icanhazip.com);
-MYIP2="s/xxxxxxxxx/$MYIP/g";
-cd /root
+#MYIP=$(wget -qO- ipv4.icanhazip.com);
+#MYIP2="s/xxxxxxxxx/$MYIP/g";
+#cd /root
 
 apt-get -y install yum
 yum -y install make automake autoconf gcc gcc++

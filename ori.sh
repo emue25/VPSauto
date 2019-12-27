@@ -5,22 +5,22 @@ if [[ $USER != "root" ]]; then
 	exit
 fi
 
-# initialisasi var
-export DEBIAN_FRONTEND=noninteractive
-OS=`uname -m`;
+# initializing var
+MYIP=$(wget -qO- ipv4.icanhazip.com);
+MYIP2="s/xxxxxxxxx/$MYIP/g";
+cd /root
 
 MYIP=$(ifconfig | grep 'inet addr:' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d: -f2 | awk '{ print $1}' | head -1)
 if [ "$MYIP" = "" ]; then
 	MYIP=$(wget -qO- ipv4.icanhazip.com)
 fi
 MYIP2="s/xxxxxxxxx/$MYIP/g";
-MYIP3="s/xxxxxxxxx:443/$MYIP:443/g";
 ether=`ifconfig | cut -c 1-8 | sort | uniq -u | grep venet0 | grep -v venet0:`
 if [[ $ether = "" ]]; then
         ether=eth0
 fi
 
-	source="https://raw.githubusercontent.com/emue25/VPSauto"
+	source="https://raw.githubusercontent.com/emue25/VPSauto/master"
 
 
 # go to root
@@ -64,6 +64,7 @@ if ! grep -w -q $MYIP IP; then
 	rm -f /root/IP
 	exit
 fi
+#plugin
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2
 echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /etc/apt/sources.list.d/openvpn-aptrepo.list
@@ -71,12 +72,6 @@ echo "deb http://build.openvpn.net/debian/openvpn/release/2.4 stretch main" > /e
 apt update
 apt upgrade -y
 apt install openvpn nginx php7.0-fpm stunnel4 squid3 dropbear easy-rsa vnstat ufw build-essential fail2ban zip tar -y
-
-# initializing var
-#MYIP=$(wget -qO- ipv4.icanhazip.com);
-#MYIP2="s/xxxxxxxxx/$MYIP/g";
-#cd /root
-
 apt-get -y install yum
 yum -y install make automake autoconf gcc gcc++
 #apt-get -y install build-essential

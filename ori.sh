@@ -1,56 +1,70 @@
 #!/bin/sh
 #Script by ZhangZi
+
 if [[ $USER != "root" ]]; then
 	echo "Maaf, Anda harus menjalankan ini sebagai root"
 	exit
 fi
 
-# initializing var
-MYIP=$(wget -qO- ipv4.icanhazip.com);
+# initialisasi var
+export DEBIAN_FRONTEND=noninteractive
+OS=`uname -m`;
+
+MYIP=$(ifconfig | grep 'inet addr:' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d: -f2 | awk '{ print $1}' | head -1)
+if [ "$MYIP" = "" ]; then
+	MYIP=$(wget -qO- ipv4.icanhazip.com)
+fi
 MYIP2="s/xxxxxxxxx/$MYIP/g";
-cd /root
+ether=`ifconfig | cut -c 1-8 | sort | uniq -u | grep venet0 | grep -v venet0:`
+if [[ $ether = "" ]]; then
+        ether=eth0
+fi
+
+	source="https://raw.githubusercontent.com/emue25/VPSauto/master"
+
 
 # go to root
 cd
+
 # check registered ip
-wget https://raw.githubusercontent.com/emue25/VPSauto/master/IP.txt
+wget -q -O IP $source/ori/IP.txt
 if ! grep -w -q $MYIP IP; then
 	echo "Maaf, hanya IP yang terdaftar yang bisa menggunakan script ini!"
         echo "     
 
                        
-               =============== OS DEBIAN9 64-bit ==============
+               =============== OS-32 & 64-bit ================
                ♦                                             ♦
-               ♦  AUTOSCRIPT CREATED BY VPNSTUNNEL.COM       ♦
+               ♦   AUTOSCRIPT CREATED BY YUSUF ARDIANSYAH    ♦
 	       ♦                     &                       ♦
-	       ♦               SSHFAST.NET                   ♦
-	       ♦           MODIFIED BY DENBAGUSS             ♦
-               ♦       -----------Contact Us------------     ♦ 
-               ♦            Tel : +601122334455              ♦
+	       ♦               DENY SISWANTO                 ♦
+               ♦       -----------About Us------------       ♦ 
+               ♦            Tel : +6283843700098             ♦
                ♦         { Sms/whatsapp/telegram }           ♦ 
                ♦       http://facebook.com/t34mh4ck3r        ♦    
-               ♦            http://t.me/denbaguss            ♦
+               ♦   http://www.facebook.com/elang.overdosis   ♦
                ♦                                             ♦
-               =============== OS DEBIAN9 64-bit ==============
+               =============== OS-32 & 64-bit ================
                
                  Please make payment before use auto script
                  ..........................................
-                 .           Price: Rm.30 = 1IP           .
+                 .          Price: Rm.20 = 1IP            .
                  .          *****************             .
                  .           Maybank Account              .
                  .           =================            .
                  .          No   : Hubungi admin          .
-                 .          Name : @denbaguss             .
+                 .          Name : Yusuf Ardiansyah       .
                  ..........................................   
                           Thank You For Choice Us"
 
-	echo "    Hubungi: editor ( http://t.me/denbaguss)"
+	echo "        Hubungi: editor ( elang overdosis atau deeniedoank)"
 	
 	rm /root/IP
 	rm ori.sh
 	rm -f /root/IP
 	exit
 fi
+
 #plugin
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 sleep 2

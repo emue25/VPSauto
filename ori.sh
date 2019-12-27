@@ -19,7 +19,7 @@ if ! grep -w -q $MYIP IP; then
         echo "     
 
                        
-               =============== OS DEBIAN 64-bit ================
+               =============== OS DEBIAN9 64-bit ==============
                ♦                                             ♦
                ♦  AUTOSCRIPT CREATED BY VPNSTUNNEL.COM       ♦
 	       ♦                     &                       ♦
@@ -31,7 +31,7 @@ if ! grep -w -q $MYIP IP; then
                ♦       http://facebook.com/t34mh4ck3r        ♦    
                ♦            http://t.me/denbaguss            ♦
                ♦                                             ♦
-               =============== OS DEBIAN 64-bit ================
+               =============== OS DEBIAN9 64-bit ==============
                
                  Please make payment before use auto script
                  ..........................................

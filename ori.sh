@@ -12,31 +12,33 @@ if ! grep -w -q $MYIP IP; then
         echo "     
 
                        
-               =============== OS-32 & 64-bit ================
+               =============== OS-DEBIAN-9-64-bit ============
                ♦                                             ♦
-               ♦   AUTOSCRIPT CREATED BY YUSUF ARDIANSYAH    ♦
+               ♦     AUTOSCRIPT CREATED BY VPNSTUNNEL        ♦
 	       ♦                     &                       ♦
-	       ♦               DENY SISWANTO                 ♦
-               ♦       -----------About Us------------       ♦ 
-               ♦            Tel : +6283843700098             ♦
+	       ♦                 ZHANG-ZI                    ♦
+               ♦     -----------Contact Us------------       ♦ 
+               ♦            Tel : +601122334455              ♦
                ♦         { Sms/whatsapp/telegram }           ♦ 
-               ♦       http://facebook.com/t34mh4ck3r        ♦    
-               ♦   http://www.facebook.com/elang.overdosis   ♦
+               ♦           http://t.me/denbaguss             ♦    
+               ♦     ------------Channel Tel----------       ♦
                ♦                                             ♦
-               =============== OS-32 & 64-bit ================
+                ================ OS- 64-bit =================
                
                  Please make payment before use auto script
                  ..........................................
-                 .          Price: Rm.20 = 1IP            .
+                 .          Price: Rm.30 = 1IP            .
                  .          *****************             .
                  .           Maybank Account              .
+                 .                 &                      .
+                 .               Paypall                  .
                  .           =================            .
-                 .          No   : Hubungi admin          .
-                 .          Name : Yusuf Ardiansyah       .
+                 .          Contact:  admin               .
+                 .          Name   : denbaguss            .
                  ..........................................   
                           Thank You For Choice Us"
 
-	echo "        Hubungi: editor ( elang overdosis atau deeniedoank)"
+	echo "        Contact: editor ( vpnstunnel.com atau dnbaguss)"
 	
 	rm /root/IP
 	rm ori.sh

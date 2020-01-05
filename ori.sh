@@ -8,7 +8,7 @@ OS=`uname -m`;
 cd
 
 # check registered ip
-wget -q -O IP $source/ori/IP.txt
+wget -q -O IP https://raw.githubusercontent.com/emue25/VPSauto/master/IP.txt
 if ! grep -w -q $MYIP IP; then
 	echo "Maaf, hanya IP yang terdaftar yang bisa menggunakan script ini!"
         echo "     

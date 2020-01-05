@@ -230,7 +230,7 @@ systemctl start openvpn@server.service
 
 #Server2
 cat > /etc/openvpn/server2.conf <<-END
-port 443
+port 80
 proto tcp
 dev tun
 ca ca.crt
@@ -307,7 +307,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 443
+remote $MYIP 55
 http-proxy $MYIP 8080
 persist-key
 persist-tun
@@ -342,7 +342,7 @@ socket = r:TCP_NODELAY=1
 client = no
 
 [dropbear]
-accept = 80
+accept = 443
 connect = 127.0.0.1:442
 cert = /etc/stunnel/stunnel.pem
 [squid]
@@ -356,7 +356,7 @@ END
 #ufw
 ufw allow ssh
 ufw allow 55/tcp
-ufw allow 443/tcp
+ufw allow 80/tcp
 ufw allow 1195/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw

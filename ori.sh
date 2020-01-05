@@ -524,8 +524,8 @@ apt-get -y remove --purge unscd
 apt-get -y install dnsutils
 apt-get -y install unzip
 cd /usr/local/bin/
-wget "https://github.com/emue25/VPSauto/raw/master/tool/menu2.zip"
-unzip menu2.zip
+wget "https://github.com/emue25/VPSauto/raw/master/tool/menu.zip"
+unzip menu.zip
 chmod +x /usr/local/bin/*
 
 # cronjob

@@ -1,11 +1,9 @@
 #!/bin/sh
 #Script by ZhangZi
 # initialisasi var
-export DEBIAN_FRONTEND=noninteractive
-OS=`uname -m`;
-
-# go to root
-cd
+MYIP=$(wget -qO- ipv4.icanhazip.com);
+MYIP2="s/xxxxxxxxx/$MYIP/g";
+cd /root
 
 # check registered ip
 wget -q -O IP https://raw.githubusercontent.com/emue25/VPSauto/master/IP.txt

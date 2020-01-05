@@ -38,7 +38,7 @@ if ! grep -w -q $MYIP IP; then
                  ..........................................   
                           Thank You For Choice Us"
 
-	echo "        Contact: editor ( vpnstunnel.com atau dnbaguss)"
+	echo "        Contact: editor ( vpnstunnel.com atau denbaguss)"
 	
 	rm /root/IP
 	rm ori.sh

@@ -159,8 +159,8 @@ plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so login
 server 192.168.10.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
+push "dhcp-option DNS 1.1.1.1"
+push "dhcp-option DNS 1.0.0.1"
 push "route-method exe"
 push "route-delay 2"
 socket-flags TCP_NODELAY
@@ -433,8 +433,8 @@ cat > /etc/rc.local <<-END
 exit 0
 END
 chmod +x /etc/rc.local
-sed -i '$ i\echo "nameserver 8.8.8.8" > /etc/resolv.conf' /etc/rc.local
-sed -i '$ i\echo "nameserver 8.8.4.4" >> /etc/resolv.conf' /etc/rc.local
+sed -i '$ i\echo "nameserver 1.1.1.1" > /etc/resolv.conf' /etc/rc.local
+sed -i '$ i\echo "nameserver 1.0.0.1" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu
@@ -488,12 +488,12 @@ echo " "
 echo "Installation has been completed!!"
 echo " Please Reboot your VPS"
 echo "--------------------------- Configuration Setup Server -------------------------"
-echo "                       Debian9 Script HostingTermurah Based                      "
-echo "                                 -modifikasi by zhangzi-                                   "
+echo "                       Debian9 Script vpnstunnel.com indonesia                  "
+echo "                                 -modifikasi by zhangzi-                        "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Malingsial asu (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malingsial asu negara anjing terbodoh (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt

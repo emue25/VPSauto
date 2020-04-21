@@ -15,6 +15,10 @@ wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 apt update
 apt upgrade -y
 apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip yum -y
+deb http://cdn-aws.deb.debian.org/debian stable main
+deb http://cdn-aws.deb.debian.org/debian-security stable/updates main
+deb https://deb.debian.org/debian stable main
+deb https://deb.debian.org/debian-security stable/updates main
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 

@@ -9,18 +9,12 @@ cd /root
 #Script by ZhangZi
 apt update
 apt-get -y install ca-certificates gnupg
-#wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
+wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 #Requirement
 apt update
 apt upgrade -y
 apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip yum -y
 
-#cat > /etc/apt/sources.list <<END2
-#deb http://cdn-aws.deb.debian.org/debian stable main
-#deb http://cdn-aws.deb.debian.org/debian-security stable/updates main
-#deb https://deb.debian.org/debian stable main
-#deb https://deb.debian.org/debian-security stable/updates main
-#END2
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
@@ -32,13 +26,12 @@ tar -xzvf plugin.tgz
 ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 
 # install webmin
-cd
-wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
-dpkg --install webmin_1.930_all.deb;
-apt-get -y -f install;
-sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-rm /root/webmin_1.930_all.deb
-/etc/init.d/webmin restart
+#cd
+#wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
+#apt-get -y -f install;
+#sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
+#rm /root/webmin_1.930_all.deb
+#/etc/init.d/webmin restart
 
 # install screenfetch
 cd

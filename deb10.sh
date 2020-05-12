@@ -7,9 +7,8 @@ cd /root
 
 #!/bin/sh
 #Script by ZhangZi
-
 apt update
-#apt-get -y install ca-certificates gnupg
+apt-get -y install ca-certificates gnupg
 #wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 #Requirement
 apt update
@@ -26,8 +25,8 @@ apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essenti
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
 yum -y install make automake autoconf gcc gcc++
-#wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
-#tar -xzvf plugin.tgz
+wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
+tar -xzvf plugin.tgz
 
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime

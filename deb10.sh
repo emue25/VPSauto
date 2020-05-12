@@ -5,8 +5,6 @@ MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g";
 cd /root
 
-#!/bin/sh
-#Script by ZhangZi
 apt update
 apt-get -y install ca-certificates gnupg
 wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -

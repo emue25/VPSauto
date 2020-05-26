@@ -103,9 +103,9 @@ wget -O /usr/bin/badvpn-udpgw "https://github.com/emue25/AutoScriptDebianStretch
 if [ "$OS" == "x86_64" ]; then
   wget -O /usr/bin/badvpn-udpgw "https://github.com/emue25/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw64"
 fi
-sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
+sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7200' /etc/rc.local
 chmod +x /usr/bin/badvpn-udpgw
-screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
+screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7200
 
 #install OpenVPN
 cp -r /usr/share/easy-rsa/ /etc/openvpn
@@ -146,7 +146,7 @@ chmod +x /etc/openvpn/ca.crt
 tar -xzvf /root/plugin.tgz -C /usr/lib/openvpn/
 chmod +x /usr/lib/openvpn/*
 cat > /etc/openvpn/server.conf <<-END
-port 55
+port 110
 proto tcp
 dev tun
 ca ca.crt
@@ -188,7 +188,7 @@ auth-user-pass
 client
 dev tun
 proto tcp
-remote $MYIP 55
+remote $MYIP 110
 http-proxy $MYIP 80
 persist-key
 persist-tun
@@ -212,7 +212,7 @@ echo '<ca>' >> /home/vps/public_html/client.ovpn
 cat /etc/openvpn/ca.crt >> /home/vps/public_html/client.ovpn
 echo '</ca>' >> /home/vps/public_html/client.ovpn
 
-cat > /home/vps/public_html/Openssl.ovpn <<-END
+cat > /home/vps/public_html/openssl.ovpn <<-END
 # Created by ZhangZi
 auth-user-pass
 client
@@ -238,15 +238,15 @@ script-security 2
 cipher none
 auth none
 END
-echo '<ca>' >> /home/vps/public_html/Openssl.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/Openssl.ovpn
-echo '</ca>' >> /home/vps/public_html/Openssl.ovpn
+echo '<ca>' >> /home/vps/public_html/openssl.ovpn
+cat /etc/openvpn/ca.crt >> /home/vps/public_html/openssl.ovpn
+echo '</ca>' >> /home/vps/public_html/openssl.ovpn
 
 cat > /home/vps/public_html/stunnel.conf <<-END
 client = yes
 debug = 6
 [openvpn]
-accept = 127.0.0.1:55
+accept = 127.0.0.1:110
 connect = $MYIP:587
 TIMEOUTclose = 0
 verify = 0
@@ -264,7 +264,7 @@ socket = r:TCP_NODELAY=1
 client = no
 [openvpn]
 accept = 587
-connect = 127.0.0.1:55
+connect = 127.0.0.1:110
 cert = /etc/stunnel/stunnel.pem
 [dropbear]
 accept = 443
@@ -277,7 +277,7 @@ END
 /etc/init.d/stunnel4 restart
 
 ufw allow ssh
-ufw allow 55/tcp
+ufw allow 110/tcp
 sed -i 's|DEFAULT_INPUT_POLICY="DROP"|DEFAULT_INPUT_POLICY="ACCEPT"|' /etc/default/ufw
 sed -i 's|DEFAULT_FORWARD_POLICY="DROP"|DEFAULT_FORWARD_POLICY="ACCEPT"|' /etc/default/ufw
 
@@ -454,7 +454,7 @@ echo "*/3 * * * * root /usr/bin/clearcache.sh" > /etc/cron.d/clearcache1
 
 # compress configs
 cd /home/vps/public_html
-zip configs.zip client.ovpn
+zip configs.zip client.ovpn openssl.ovpn
 # install ddos deflate
 cd
 apt-get -y install dnsutils dsniff
@@ -493,18 +493,18 @@ echo "                                 -modifikasi by zhangzi-                  
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Malingsial asu negara anjing terbodoh (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Malingsial (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt
 echo "   - IPv6        : [OFF]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Application & Port Information"  | tee -a log-install.txt
-echo "   - OpenVPN		: TCP 55 "  | tee -a log-install.txt
-echo "   - OpenVPN-SSL   	: 444 "  | tee -a log-install.txt
+echo "   - OpenVPN		: TCP 110 "  | tee -a log-install.txt
+echo "   - OpenVPN-SSL   	: 587 "  | tee -a log-install.txt
 echo "   - Dropbear		: 442"  | tee -a log-install.txt
 echo "   - Stunnel		: 443"  | tee -a log-install.txt
-echo "   - BadVPN  	: 7300"  | tee -a log-install.txt
+echo "   - BadVPN  	: 7200"  | tee -a log-install.txt
 echo "   - Squid Proxy	: 8080, 8000, 3128, 80 (limit to IP Server)"  | tee -a log-install.txt
 echo "   - Nginx		: 85"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt

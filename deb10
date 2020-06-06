@@ -6,7 +6,11 @@ cd /root
 apt update
 apt upgrade -y
 #apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip yum -y
-
+# Getting some OpenVPN plugins for unix authentication
+cd
+wget https://github.com/johndesu090/AutoScriptDB/raw/master/Files/Plugins/plugin.tgz
+tar -xzvf /root/plugin.tgz -C /etc/openvpn/
+rm -f plugin.tgz
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
@@ -334,12 +338,6 @@ NUovpn
  # setting openvpn server port
  sed -i "s|OVPNTCP|110|g" /etc/openvpn/server_tcp.conf
  sed -i "s|OVPNUDP|2500|g" /etc/openvpn/server_udp.conf
- 
- # Getting some OpenVPN plugins for unix authentication
- cd
- wget https://github.com/johndesu090/AutoScriptDB/raw/master/Files/Plugins/plugin.tgz
- tar -xzvf /root/plugin.tgz -C /etc/openvpn/
- rm -f plugin.tgz
  
  # Some workaround for OpenVZ machines for "Startup error" openvpn service
  if [[ "$(hostnamectl | grep -i Virtualization | awk '{print $2}' | head -n1)" == 'openvz' ]]; then

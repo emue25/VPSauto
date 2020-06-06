@@ -2,20 +2,17 @@
 #Script by weduz
 cd /root
 
-apt update
-apt-get -y install ca-certificates gnupg
-wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip yum -y
+#apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip yum -y
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
-yum -y install make automake autoconf gcc gcc++
-wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
-tar -xzvf plugin.tgz
+#yum -y install make automake autoconf gcc gcc++
+#wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
+#tar -xzvf plugin.tgz
 
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
@@ -23,19 +20,25 @@ ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
  # Trying to remove obsolette packages after installation
  apt-get autoremove -y
  
+  # Removing some firewall tools that may affect other services
+ apt-get remove --purge ufw firewalld -y
+
+ 
+ # Installing some important machine essentials
+ apt-get install nano wget curl zip unzip tar gzip p7zip-full bc rc openssl cron net-tools dnsutils dos2unix screen bzip2 ccrypt -y
+ 
+ # Now installing all our wanted services
+ apt-get install dropbear stunnel4 privoxy ca-certificates nginx ruby apt-transport-https lsb-release squid -y
+
+ # Installing all required packages to install Webmin
+ apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python dbus libxml-parser-perl -y
+ apt-get install shared-mime-info jq fail2ban -y
  # Installing OpenVPN by pulling its repository inside sources.list file 
  rm -rf /etc/apt/sources.list.d/openvpn*
  echo "deb http://build.openvpn.net/debian/openvpn/stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/openvpn.list
  wget -qO - http://build.openvpn.net/debian/openvpn/stable/pubkey.gpg|apt-key add -
  apt-get update
  apt-get install openvpn -y
-# install webmin
-#cd
-#wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
-#apt-get -y -f install;
-#sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-#rm /root/webmin_1.930_all.deb
-#/etc/init.d/webmin restart
 
 # install screenfetch
 cd
@@ -54,9 +57,6 @@ sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 777 -p 110"/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
 
-}
-
-function InsOpenVPN(){
  # Checking if openvpn folder is accidentally deleted or purged
  if [[ ! -e /etc/openvpn ]]; then
   mkdir -p /etc/openvpn
@@ -65,8 +65,8 @@ function InsOpenVPN(){
  # Removing all existing openvpn server files
  rm -rf /etc/openvpn/*
 
- # Creating server.conf, ca.crt, server.crt and server.key
- cat <<'myOpenVPNconf' > /etc/openvpn/server_tcp.conf
+# Creating server.conf, ca.crt, server.crt and server.key
+cat <<'myOpenVPNconf' > /etc/openvpn/server_tcp.conf
 # OpenVPN TCP
 port 110
 proto tcp

@@ -20,6 +20,15 @@ tar -xzvf plugin.tgz
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 
+ # Trying to remove obsolette packages after installation
+ apt-get autoremove -y
+ 
+ # Installing OpenVPN by pulling its repository inside sources.list file 
+ rm -rf /etc/apt/sources.list.d/openvpn*
+ echo "deb http://build.openvpn.net/debian/openvpn/stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/openvpn.list
+ wget -qO - http://build.openvpn.net/debian/openvpn/stable/pubkey.gpg|apt-key add -
+ apt-get update
+ apt-get install openvpn -y
 # install webmin
 #cd
 #wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
@@ -44,6 +53,8 @@ sed -i 's/NO_START=1/NO_START=0/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_PORT=22/DROPBEAR_PORT=442/g' /etc/default/dropbear
 sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 777 -p 110"/g' /etc/default/dropbear
 echo "/bin/false" >> /etc/shells
+
+}
 
 function InsOpenVPN(){
  # Checking if openvpn folder is accidentally deleted or purged
@@ -154,11 +165,10 @@ Certificate:
         Version: 3 (0x2)
         Serial Number: 1 (0x1)
     Signature Algorithm: sha256WithRSAEncryption
-        Issuer: C=PH, ST=Tarlac, L=Concepcion, O=JohnFordTV, OU=JohnFordTV, CN=DebianVPN/name=John Ford Mangiliman/emailAddress=admin@johnfordtv.me
-        Validity
+        Issuer: C=MY, ST=Johor, L=JohorBaharu, O=VPNstunnel, OU=VPNstunnel, CN=DebianVPN/name=VPNstunnel/emailAddress=admin@VPNstunnel
             Not Before: Nov 25 08:06:59 2019 GMT
             Not After : Nov 22 08:06:59 2029 GMT
-        Subject: C=PH, ST=Tarlac, L=Concepcion, O=JohnFordTV, OU=JohnFordTV, CN=DebianVPN/name=John Ford Mangiliman/emailAddress=admin@johnfordtv.me
+        Subject: C=MY, ST=Johor, L=JohorBaharu, O=VPNstunnel, OU=VPNstunnel, CN=DebianVPN/name=VPNstunnel/emailAddress=admin@VPNstunnel
         Subject Public Key Info:
             Public Key Algorithm: rsaEncryption
                 Public-Key: (2048 bit)
@@ -193,7 +203,7 @@ Certificate:
                 50:31:04:C4:7A:47:C1:DA:46:CC:77:38:DE:1C:63:10:40:C3:80:22
             X509v3 Authority Key Identifier:
                 keyid:2D:71:9E:0D:00:4B:5C:23:C8:77:41:77:AF:FE:7C:14:30:A6:8C:2E
-                DirName:/C=PH/ST=Tarlac/L=Concepcion/O=JohnFordTV/OU=JohnFordTV/CN=DebianVPN/name=John Ford Mangiliman/emailAddress=admin@johnfordtv.me
+                DirName:/C=MY/ST=Johor/L=JohorBaharu/O=VPNstunnelV/OU=JVPNstunnel/CN=DebianVPN/name=VPNstunnel/emailAddress=admin@VPNstunnel
                 serial:8C:5B:0D:CB:E1:EA:F3:C4
 
             X509v3 Extended Key Usage:
@@ -322,8 +332,8 @@ done
 NUovpn
 
  # setting openvpn server port
- sed -i "s|OVPNTCP|$OpenVPN_TCP_Port|g" /etc/openvpn/server_tcp.conf
- sed -i "s|OVPNUDP|$OpenVPN_UDP_Port|g" /etc/openvpn/server_udp.conf
+ sed -i "s|OVPNTCP|110|g" /etc/openvpn/server_tcp.conf
+ sed -i "s|OVPNUDP|2500|g" /etc/openvpn/server_udp.conf
  
  # Getting some OpenVPN plugins for unix authentication
  cd
@@ -367,16 +377,34 @@ EOFipt
  systemctl start openvpn@server_udp
  systemctl enable openvpn@server_udp
  
+ }
+
+function OvpnConfigs(){
+ # Creating nginx config for our ovpn config downloads webserver
+ cat <<'myNginxC' > /etc/nginx/conf.d/johnfordtv-ovpn-config.conf
+# My OpenVPN Config Download Directory
+server {
+ listen 0.0.0.0:myNginx;
+ server_name localhost;
+ root /var/www/openvpn;
+ index index.html;
+}
+myNginxC
+
+ # Setting our nginx config port for .ovpn download site
+ sed -i "s|myNginx|85|g" /etc/nginx/conf.d/johnfordtv-ovpn-config.conf
+
+ # Removing Default nginx page(port 80)
+ rm -rf /etc/nginx/sites-*
+
+ # Creating our root directory for all of our .ovpn configs
+ rm -rf /var/www/openvpn
+ mkdir -p /var/www/openvpn
+
  #config
  
 cat <<EOF16> /var/www/openvpn/vpnstunnel.ovpn
-# JohnFordTV's VPN Premium Script
-# © Github.com/johndesu090
-# Official Repository: https://github.com/johndesu090/AutoScriptDB
-# For Updates, Suggestions, and Bug Reports, Join to my Messenger Groupchat(VPS Owners): https://m.me/join/AbbHxIHfrY9SmoBO
-# For Donations, Im accepting prepaid loads or GCash transactions:
-# Smart: 09206200840
-# Facebook: https://fb.me/johndesu090
+# VPN Premium Script
 # Thanks for using this script, Enjoy Highspeed OpenVPN Service
 client
 dev tun
@@ -406,18 +434,12 @@ $(cat /etc/openvpn/ca.crt)
 EOF16
 
 cat <<EOF162> /var/www/openvpn/vpnudp.ovpn
-# JohnFordTV's VPN Premium Script
-# © Github.com/johndesu090
-# Official Repository: https://github.com/johndesu090/AutoScriptDB
-# For Updates, Suggestions, and Bug Reports, Join to my Messenger Groupchat(VPS Owners): https://m.me/join/AbbHxIHfrY9SmoBO
-# For Donations, Im accepting prepaid loads or GCash transactions:
-# Smart: 09206200840
-# Facebook: https://fb.me/johndesu090
+# VPN Premium Script
 # Thanks for using this script, Enjoy Highspeed OpenVPN Service
 client
 dev tun
 proto udp
-setenv FRIENDLY_NAME "Debian VPN SUN"
+setenv FRIENDLY_NAME "VPNstunnel"
 remote $IPADDR 2500
 remote-cert-tls server
 resolv-retry infinite
@@ -453,7 +475,7 @@ cat <<'mySiteOvpn' > /var/www/openvpn/index.html
 mySiteOvpn
  
  # Setting template's correct name,IP address and nginx Port
- sed -i "s|NGINXPORT|$OvpnDownload_Port|g" /var/www/openvpn/index.html
+ sed -i "s|NGINXPORT|85|g" /var/www/openvpn/index.html
  sed -i "s|IP-ADDRESS|$IPADDR|g" /var/www/openvpn/index.html
 
  # Restarting nginx service

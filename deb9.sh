@@ -32,7 +32,7 @@ ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 # install screenfetch
 cd
 rm -rf /root/.bashrc
-wget -O /root/.bashrc https://raw.githubusercontent.com/brantbell/cream/mei/.bashrc
+wget -O /root/.bashrc https://raw.githubusercontent.com/emue25/cream/mei/.bashrc
 
 #text gambar
 apt-get install boxes
@@ -312,8 +312,8 @@ COMMIT
 -A INPUT -p tcp --dport 587  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 1194  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 1194  -m state --state NEW -j ACCEPT
--A INPUT -p tcp --dport 55  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 55  -m state --state NEW -j ACCEPT
+-A INPUT -p tcp --dport 110  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 110  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 8085  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 8085  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 8888  -m state --state NEW -j ACCEPT
@@ -322,8 +322,8 @@ COMMIT
 -A INPUT -p udp --dport 3128  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 8080  -m state --state NEW -j ACCEPT
 -A INPUT -p udp --dport 8080  -m state --state NEW -j ACCEPT 
--A INPUT -p tcp --dport 7300  -m state --state NEW -j ACCEPT
--A INPUT -p udp --dport 7300  -m state --state NEW -j ACCEPT 
+-A INPUT -p tcp --dport 7200  -m state --state NEW -j ACCEPT
+-A INPUT -p udp --dport 7200  -m state --state NEW -j ACCEPT 
 -A INPUT -p tcp --dport 10000  -m state --state NEW -j ACCEPT
 -A INPUT -p tcp --dport 587 -j ACCEPT
 -A OUTPUT -p tcp --dport 6881:6889 -j DROP
@@ -493,7 +493,7 @@ echo "                                 -modifikasi by zhangzi-                  
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Server Information"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Malingsial (GMT +8)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Kuala_Lumpur (GMT +8)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [ON]"  | tee -a log-install.txt
 echo "   - IPtables    : [ON]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [OFF]"  | tee -a log-install.txt

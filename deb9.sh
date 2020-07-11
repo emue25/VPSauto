@@ -205,6 +205,9 @@ connect-retry-max 8080
 mute-replay-warnings
 redirect-gateway def1
 script-security 2
+route 0.0.0.0 0.0.0.0
+route-method exe
+route-delay 2
 cipher none
 auth none
 END

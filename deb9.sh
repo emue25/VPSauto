@@ -160,7 +160,7 @@ server 192.168.10.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 1.1.1.1"
-push "dhcp-option DNS 1.1.0.0"
+push "dhcp-option DNS 1.0.0.1"
 push "route-method exe"
 push "route-delay 2"
 socket-flags TCP_NODELAY
@@ -434,7 +434,7 @@ exit 0
 END
 chmod +x /etc/rc.local
 sed -i '$ i\echo "nameserver 1.1.1.1" > /etc/resolv.conf' /etc/rc.local
-sed -i '$ i\echo "nameserver 1.1.0.0" >> /etc/resolv.conf' /etc/rc.local
+sed -i '$ i\echo "nameserver 1.0.0.1" >> /etc/resolv.conf' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 
 # Configure menu

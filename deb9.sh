@@ -243,62 +243,29 @@ echo '</ca>' >> /home/vps/public_html/client.ovpn
 
 cat > /home/vps/public_html/openssl.ovpn <<-END
 # Created by ZhangZi
-auth-user-pass
 client
 dev tun
 proto tcp
-remote 127.0.0.1 587
-route $MYIP 255.255.255.255 net_gateway
+remote $IPADDRESS 443
 persist-key
 persist-tun
+dev tun
 pull
 resolv-retry infinite
 nobind
-user nobody
-comp-lzo
-remote-cert-tls server
+ns-cert-type server
 verb 3
 mute 2
-connect-retry 5 5
-connect-retry-max 8080
 mute-replay-warnings
+auth-user-pass
 redirect-gateway def1
 script-security 2
+up /etc/openvpn/update-resolv-conf
+down /etc/openvpn/update-resolv-conf
+route $IPADDRESS 255.255.255.255 net_gateway
+route-method exe
+route-delay 2
 cipher none
-auth none
-END
-echo '<ca>' >> /home/vps/public_html/openssl.ovpn
-cat /etc/openvpn/ca.crt >> /home/vps/public_html/openssl.ovpn
-echo '</ca>' >> /home/vps/public_html/openssl.ovpn
-
-cat > /home/vps/public_html/stunnel.conf <<-END
-client = yes
-debug = 6
-[openvpn]
-accept = 127.0.0.1:110
-connect = $MYIP:587
-TIMEOUTclose = 0
-verify = 0
-sni = imo.im
-END
-
-# Configure Stunnel
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
-cat > /etc/stunnel/stunnel.conf <<-END
-sslVersion = all
-pid = /stunnel.pid
-socket = l:TCP_NODELAY=1
-socket = r:TCP_NODELAY=1
-client = no
-[openvpn]
-accept = 444
-connect = 127.0.0.1:22
-cert = /etc/stunnel/stunnel.pem
-[dropbear]
-accept = 445
-connect = 127.0.0.1:442
-cert = /etc/stunnel/stunnel.pem
 
 END
 # Restart openvpn
@@ -619,7 +586,21 @@ echo "00 23 * * * root /usr/bin/disable-user-expire" > /etc/cron.d/disable-user-
 echo "0 */12 * * * root /sbin/reboot" > /etc/cron.d/reboot
 #echo "00 01 * * * root echo 3 > /proc/sys/vm/drop_caches && swapoff -a && swapon -a" > /etc/cron.d/clearcacheram3swap
 echo "*/3 * * * * root /usr/bin/clearcache.sh" > /etc/cron.d/clearcache1
-
+# Configure Stunnel
+apt update && apt upgrade -y
+apt install stunnel4 -y
+cd /etc/stunnel/
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=US' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+sudo touch stunnel.conf
+echo "client = no" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "[openvpn]" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "accept = 443" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "connect = 127.0.0.1:110" | sudo tee -a /etc/stunnel/stunnel.conf
+echo "cert = /etc/stunnel/stunnel.pem" | sudo tee -a /etc/stunnel/stunnel.conf
+sudo sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo cp /etc/stunnel/stunnel.pem ~
+/etc/init.d/stunnel4 restart
 # compress configs
 cd /home/vps/public_html
 zip configs.zip client.ovpn openssl.ovpn

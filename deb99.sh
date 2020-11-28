@@ -2,9 +2,18 @@
 #Script by zhangzi
 # initializing var
 MYIP=$(wget -qO- ipv4.icanhazip.com);
-MYIP2="s/xxxxxxxxx/$MYIP/g";
-cd /root
+MYIP2="s/xxxxxxxxx/$MYIP/g"
 
+# detail nama perusahaan
+country=ID
+state=PURWOREJO
+locality=JawaTengah
+organization=VPNstunnel
+organizationalunit=VPNinjector
+commonname=denb4gus
+email=admin@vpnstunnel.com
+
+cd /root
 #rep
 apt update
 apt-get -y install ca-certificates gnupg
@@ -12,7 +21,7 @@ wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg|apt-key add -
 #Requirement
 apt update
 apt upgrade -y
-apt install openvpn php7.3-fpm stunnel4 squid3 dropbear vnstat ufw build-essential fail2ban zip yum -y
+apt install openvpn stunnel4 squid dropbear vnstat ufw build-essential fail2ban zip yum -y
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
@@ -22,15 +31,6 @@ tar -xzvf plugin.tgz
 
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
-
-# install webmin
-cd
-wget "https://github.com/emue25/VPSauto/raw/master/webmin_1.930_all.deb"
-dpkg --install webmin_1.930_all.deb;
-apt-get -y -f install;
-sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
-rm /root/webmin_1.930_all.deb
-/etc/init.d/webmin restart
 
 # install screenfetch
 cd
@@ -96,35 +96,91 @@ sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dr
 /etc/init.d/ssh restart
 /etc/init.d/dropbear restart
 
-# install badvpn
-wget -O /usr/bin/badvpn-udpgw "https://github.com/emue25/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw"
-if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "https://github.com/emue25/AutoScriptDebianStretch/raw/master/Files/Plugins/badvpn-udpgw64"
-fi
-sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
-chmod +x /usr/bin/badvpn-udpgw
-screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
-
-# Configure Stunnel
-sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=ID' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+# install stunnel
+apt-get install stunnel4 -y
 cat > /etc/stunnel/stunnel.conf <<-END
-sslVersion = all
-pid = /stunnel.pid
+cert = /etc/stunnel/stunnel.pem
+client = no
+socket = a:SO_REUSEADDR=1
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
-client = no
-
+[dropbear]
+accept = 222
+connect = 127.0.0.1:22
+[dropbear]
+accept = 80
+connect = 127.0.0.1:442
 [dropbear]
 accept = 777
-connect = 127.0.0.1:442
-cert = /etc/stunnel/stunnel.pem
-
-[ssh]
-accept = 80
-connect = 127.0.0.1:22
-cert = /etc/stunnel/stunnel.pem
+connect = 127.0.0.1:77
 END
+
+echo "=================  membuat Sertifikat OpenSSL ======================"
+echo "========================================================="
+#membuat sertifikat
+openssl genrsa -out key.pem 2048
+openssl req -new -x509 -key key.pem -out cert.pem -days 1095 \
+-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+cat key.pem cert.pem >> /etc/stunnel/stunnel.pem
+
+# konfigurasi stunnel
+sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+/etc/init.d/stunnel4 restart
+
+
+#instal sslh
+cd
+apt-get -y install sslh
+
+#configurasi sslh
+wget -O /etc/default/sslh "https://raw.githubusercontent.com/emue25/cream/mei/sslh-conf"
+/etc/init.d/sslh restart
+
+echo "=================  Install badVPn (VC and Game) ======================"
+echo "========================================================="
+
+# buat directory badvpn
+
+echo "================= Disable badVPN V 1  ======================"
+
+echo "================= Auto Installer Disable badVPN V 2  ======================"
+
+echo "================= Auto Installer Disable badVPN V 3  ======================"
+# buat directory badvpn
+cd /usr/bin
+mkdir build
+cd build
+wget https://github.com/ambrop72/badvpn/archive/1.999.130.tar.gz
+tar xvzf 1.999.130.tar.gz
+cd badvpn-1.999.130
+cmake -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_TUN2SOCKS=1 -DBUILD_UDPGW=1
+make install
+make -i install
+
+# auto start badvpn single port
+sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 --max-connections-for-client 10' /etc/rc.local
+screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 500 --max-connections-for-client 20 &
+cd
+
+# auto start badvpn second port
+#cd /usr/bin/build/badvpn-1.999.130
+sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7200 --max-clients 1000 --max-connections-for-client 10' /etc/rc.local
+screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7200 --max-clients 500 --max-connections-for-client 20 &
+cd
+
+# auto start badvpn second port
+sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7100 --max-clients 1000 --max-connections-for-client 10' /etc/rc.local
+screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7100 --max-clients 500 --max-connections-for-client 20 &
+cd
+
+# permition
+chmod +x /usr/local/bin/badvpn-udpgw
+chmod +x /usr/local/share/man/man7/badvpn.7
+chmod +x /usr/local/bin/badvpn-tun2socks
+chmod +x /usr/local/share/man/man8/badvpn-tun2socks.8
+chmod +x /usr/bin/build
+chmod +x /etc/rc.local
+
 
 # set ipv4 forward
 echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -229,6 +285,8 @@ chmod +x /usr/local/bin/*
 
 # install ddos deflate
 cd
+apt install tcpdump
+apt install grepcidr
 apt-get -y install dnsutils dsniff
 wget https://github.com/jgmdev/ddos-deflate/archive/master.zip
 unzip master.zip
@@ -246,6 +304,12 @@ vnstat -u -i eth0
 
 # install libxml-parser
 apt-get install libxml-parser-perl -y -f
+
+# auto Delete Acount SSH Expired
+wget -O /usr/local/bin/userdelexpired "https://www.dropbox.com/s/cwe64ztqk8w622u/userdelexpired?dl=1" && chmod +x /usr/local/bin/userdelexpired
+
+#autokill
+wget https://raw.githubusercontent.com/emue25/cream/mei/autokill.sh && chmod +x autokill.sh && ./autokill.sh
 
 # finalizing
 vnstat -u -i eth0

@@ -316,15 +316,16 @@ vnstat -u -i eth0
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
 #/etc/init.d/nginx start
-/etc/init.d/php7.3-fpm start
+#/etc/init.d/php7.3-fpm start
 /etc/init.d/vnstat restart
 #/etc/init.d/openvpn restart
 /etc/init.d/dropbear restart
 /etc/init.d/fail2ban restart
 /etc/init.d/squid restart
+/etc/init.d/stunnel4 restart
 
 #clearing history
-history -c
+#history -c
 rm -rf /root/*
 cd /root
 # info

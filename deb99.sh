@@ -4,15 +4,6 @@
 MYIP=$(wget -qO- ipv4.icanhazip.com);
 MYIP2="s/xxxxxxxxx/$MYIP/g"
 
-# detail nama perusahaan
-country=ID
-state=PURWOREJO
-locality=JawaTengah
-organization=VPNstunnel
-organizationalunit=VPNinjector
-commonname=denb4gus
-email=admin@vpnstunnel.com
-
 cd /root
 #rep
 apt update
@@ -26,8 +17,8 @@ apt install openvpn stunnel4 squid dropbear vnstat ufw build-essential fail2ban 
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 
 yum -y install make automake autoconf gcc gcc++
-wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
-tar -xzvf plugin.tgz
+#wget "https://raw.githubusercontent.com/emue25/VPSauto/master/tool/plugin.tgz"
+#tar -xzvf plugin.tgz
 
 # set time GMT +8
 ln -fs /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
@@ -96,32 +87,24 @@ sed -i 's@DROPBEAR_BANNER=""@DROPBEAR_BANNER="/etc/issue.net"@g' /etc/default/dr
 /etc/init.d/ssh restart
 /etc/init.d/dropbear restart
 
-# install stunnel
-apt-get install stunnel4 -y
+# Configure Stunnel
+sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=127.0.0.1/O=localhost/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
 cat > /etc/stunnel/stunnel.conf <<-END
-cert = /etc/stunnel/stunnel.pem
-client = no
-socket = a:SO_REUSEADDR=1
+sslVersion = all
+pid = /stunnel.pid
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
-[dropbear]
-accept = 222
-connect = 127.0.0.1:22
-[dropbear]
+client = no
+[ssh]
 accept = 80
-connect = 127.0.0.1:442
+connect = 127.0.0.1:22
+cert = /etc/stunnel/stunnel.pem
 [dropbear]
 accept = 777
-connect = 127.0.0.1:77
+connect = 127.0.0.1:442
+cert = /etc/stunnel/stunnel.pem
 END
-
-echo "=================  membuat Sertifikat OpenSSL ======================"
-echo "========================================================="
-#membuat sertifikat
-openssl genrsa -out key.pem 2048
-openssl req -new -x509 -key key.pem -out cert.pem -days 1095 \
--subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
-cat key.pem cert.pem >> /etc/stunnel/stunnel.pem
 
 # konfigurasi stunnel
 sed -i 's/ENABLED=0/ENABLED=1/g' /etc/default/stunnel4
